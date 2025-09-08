@@ -81,7 +81,7 @@ def main(page: ft.Page):
                 decenas_txt = " y ".join(decenas) if decenas else "ninguna decena"
                 cadena = f"Jugar: {color} - {paridad} - {decenas_txt}"
                 l_numeros = "-".join(str(n) for n in p.get("numeros", []))
-                numeros_prediccion = p["numeros"]
+                numeros_prediccion = set(map(int, p.get("numeros", [])))
                 return cadena, l_numeros
         return "", ""
 
