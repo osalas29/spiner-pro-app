@@ -91,9 +91,12 @@ def main(page: ft.Page):
 
         # Comprobar si hubo acierto
         if numero in numeros_prediccion:
-            mensajes_txt.value = f"¡ACIERTO! ({patron_activo}). Reiniciar todo para Volver Analizar..."
-            limpiar_secuencia(None) # Pasa un argumento para evitar el error de tipo
+            mensajes_txt.value = f"✅ ¡ACIERTO! ({patron_activo}). Reiniciando análisis..."
+            limpiar_secuencia()  # ya no es necesario pasar None
+            estado_script = "ESPERANDO"
+            page.update()
             return
+
 
         # Comprobar si se acabó la ventana
         if giros_restantes <= 0:
