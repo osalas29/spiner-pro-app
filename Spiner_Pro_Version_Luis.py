@@ -92,13 +92,13 @@ def main(page: ft.Page):
         # Comprobar si hubo acierto
         if numero in numeros_prediccion:
             mensajes_txt.value = f"¡ACIERTO! ({patron_activo}). Reiniciar todo para Volver Analizar..."
-            limpiar_secuencia()
+            limpiar_secuencia(None) # Pasa un argumento para evitar el error de tipo
             return
 
         # Comprobar si se acabó la ventana
         if giros_restantes <= 0:
             mensajes_txt.value = f"Ventana cerrada para ({patron_activo}). Reiniciar todo para Volver Analizar..."
-            limpiar_secuencia()
+            limpiar_secuencia(None) # Pasa un argumento para evitar el error de tipo
             return
 
         # Actualizar contador si no pasa nada
@@ -107,6 +107,11 @@ def main(page: ft.Page):
     def manejar_estado_analizando():
         global estado_script, giros_restantes, historial_powerby, historial_combinado, historial_colores, historial_paridad, \
                PATRONES_POWER_BY, PATRONES_COMBINADOS, PATRONES_COLORES, PATRONES_PARIDAD
+
+        if not historial_powerby:
+            mensajes_txt.value = "Historial vacío. Esperando más datos para analizar."
+            page.update()
+            return
 
         if PATRONES_POWER_BY:
             buscar_patron, l_num = crear_mensaje(PATRONES_POWER_BY[0]['patrones'], historial_powerby)
