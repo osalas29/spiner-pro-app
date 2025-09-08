@@ -92,11 +92,13 @@ def main(page: ft.Page):
         # Comprobar si hubo acierto
         if numero in numeros_prediccion:
             mensajes_txt.value = f"✅ ¡ACIERTO! ({patron_activo}). Reiniciando análisis..."
-            limpiar_secuencia()  # ya no es necesario pasar None
+            limpiar_secuencia()
             estado_script = "ESPERANDO"
+            jugada_activa_txt.value = "-"
+            numeros_activos_txt.value = "-"
+            patron_activo_txt.value = "-"
             page.update()
             return
-
 
         # Comprobar si se acabó la ventana
         if giros_restantes <= 0:
