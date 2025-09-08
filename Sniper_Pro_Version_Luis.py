@@ -1,3 +1,4 @@
+import os
 import flet as ft
 import numpy as np
 import csv
@@ -567,4 +568,5 @@ def main(page: ft.Page):
         )
     )
 
-ft.app(target=main)
+port = int(os.environ.get("PORT", 8000))
+ft.app(target=main, view=ft.WEB_BROWSER, host="0.0.0.0", port=port)
