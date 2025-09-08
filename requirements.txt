@@ -2,3 +2,4 @@ flet
 numpy
 requests
 pandas
+openpyxl
