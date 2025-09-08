@@ -105,51 +105,56 @@ def main(page: ft.Page):
         mensajes_txt.value = f"Ventana de acierto: {giros_restantes} giros restantes."
 
     def manejar_estado_analizando():
-        global estado_script, giros_restantes, historial_powerby
+        global estado_script, giros_restantes, historial_powerby, historial_combinado, historial_colores, historial_paridad, \
+               PATRONES_POWER_BY, PATRONES_COMBINADOS, PATRONES_COLORES, PATRONES_PARIDAD
 
-        buscar_patron, l_num = crear_mensaje(PATRONES_POWER_BY[0]['patrones'], historial_powerby)
-        if buscar_patron !='':
-            jugada_activa_txt.value = buscar_patron
-            patron_activo_txt.value = "PATRONES POWER BY"
-            estado_script = "ACTIVA"
-            giros_restantes = 10
-            numeros_activos_txt.value = l_num
-            mensajes_txt.value = f"Faltan {giros_restantes} tiros, para tener el acierto.."
-            page.update()
-            return
+        if PATRONES_POWER_BY:
+            buscar_patron, l_num = crear_mensaje(PATRONES_POWER_BY[0]['patrones'], historial_powerby)
+            if buscar_patron != '':
+                jugada_activa_txt.value = buscar_patron
+                patron_activo_txt.value = "PATRONES POWER BY"
+                estado_script = "ACTIVA"
+                giros_restantes = 10
+                numeros_activos_txt.value = l_num
+                mensajes_txt.value = f"Faltan {giros_restantes} tiros, para tener el acierto.."
+                page.update()
+                return
 
-        buscar_patron, l_num = crear_mensaje(PATRONES_COMBINADOS[0]['patrones'], historial_powerby)
-        if buscar_patron !='':
-            jugada_activa_txt.value = buscar_patron
-            patron_activo_txt.value = "PATRONES COMBINADOS"
-            estado_script = "ACTIVA"
-            giros_restantes = 10
-            numeros_activos_txt.value = l_num
-            mensajes_txt.value = f"Faltan {giros_restantes} tiros, para tener el acierto.."
-            page.update()
-            return
+        if PATRONES_COMBINADOS:
+            buscar_patron, l_num = crear_mensaje(PATRONES_COMBINADOS[0]['patrones'], historial_combinado)
+            if buscar_patron != '':
+                jugada_activa_txt.value = buscar_patron
+                patron_activo_txt.value = "PATRONES COMBINADOS"
+                estado_script = "ACTIVA"
+                giros_restantes = 10
+                numeros_activos_txt.value = l_num
+                mensajes_txt.value = f"Faltan {giros_restantes} tiros, para tener el acierto.."
+                page.update()
+                return
 
-        buscar_patron, l_num = crear_mensaje(PATRONES_COLORES[0]['patrones'], historial_colores)
-        if buscar_patron !='':
-            jugada_activa_txt.value = buscar_patron
-            patron_activo_txt.value = "PATRONES COLORES"
-            estado_script = "ACTIVA"
-            giros_restantes = 10
-            mensajes_txt.value = f"Faltan {giros_restantes} tiros, para tener el acierto.."
-            numeros_activos_txt.value = l_num
-            page.update()
-            return
+        if PATRONES_COLORES:
+            buscar_patron, l_num = crear_mensaje(PATRONES_COLORES[0]['patrones'], historial_colores)
+            if buscar_patron != '':
+                jugada_activa_txt.value = buscar_patron
+                patron_activo_txt.value = "PATRONES COLORES"
+                estado_script = "ACTIVA"
+                giros_restantes = 10
+                mensajes_txt.value = f"Faltan {giros_restantes} tiros, para tener el acierto.."
+                numeros_activos_txt.value = l_num
+                page.update()
+                return
 
-        buscar_patron, l_num = crear_mensaje(PATRONES_PARIDAD[0]['patrones'], historial_colores)
-        if buscar_patron !='':
-            jugada_activa_txt.value = buscar_patron
-            patron_activo_txt.value = "PATRONES PARIDAD"
-            estado_script = "ACTIVA"
-            giros_restantes = 10
-            mensajes_txt.value = f"Faltan {giros_restantes} tiros, para tener el acierto.."
-            numeros_activos_txt.value = l_num
-            page.update()
-            return
+        if PATRONES_PARIDAD:
+            buscar_patron, l_num = crear_mensaje(PATRONES_PARIDAD[0]['patrones'], historial_paridad)
+            if buscar_patron != '':
+                jugada_activa_txt.value = buscar_patron
+                patron_activo_txt.value = "PATRONES PARIDAD"
+                estado_script = "ACTIVA"
+                giros_restantes = 10
+                mensajes_txt.value = f"Faltan {giros_restantes} tiros, para tener el acierto.."
+                numeros_activos_txt.value = l_num
+                page.update()
+                return
 
         jugada_activa_txt.value = ""
         patron_activo_txt.value = ""
@@ -159,7 +164,6 @@ def main(page: ft.Page):
         numeros_activos_txt.value = ""
         page.update()
         return
-
     def procesar_numero(numero):
         global historial_numeros, historial_colores, historial_paridad, historial_combinado, historial_powerby, \
             giros_restantes, estado_script
@@ -192,9 +196,9 @@ def main(page: ft.Page):
         else:  # Si no estábamos en predicción, entonces analizamos.
             manejar_estado_analizando()
 
-    def limpiar_secuencia():
+    def limpiar_secuencia(e):
         global estado_script, patron_activo, numeros_prediccion, giros_restantes, historial_numeros, historial_colores,\
-            historial_combinado, historial_powerby
+               historial_combinado, historial_powerby, secuencia
 
         seq_row.controls.clear()
         secuencia.clear()
@@ -206,8 +210,8 @@ def main(page: ft.Page):
         giros_restantes = 0
         historial_numeros = deque(maxlen=20)
         historial_colores = deque(maxlen=7)
-        historial_combinado = deque(maxlen=7)  # Los patrones combinados tienen 14 caracteres (7 pares de 2)
-        historial_powerby = deque(maxlen=7)  # Los patrones combinados tienen 21 caracteres (7 pares de 3)
+        historial_combinado = deque(maxlen=7)
+        historial_powerby = deque(maxlen=7)
 
         jugada_activa_txt.value = ""
         patron_activo_txt.value = ""
