@@ -1,4 +1,4 @@
-import os
+﻿import os
 import flet as ft
 import numpy as np
 import csv
@@ -201,29 +201,22 @@ def main(page: ft.Page):
         else:  # Si no estábamos en predicción, entonces analizamos.
             manejar_estado_analizando()
 
-    def limpiar_secuencia(e):
-        global estado_script, patron_activo, numeros_prediccion, giros_restantes, historial_numeros, historial_colores,\
-               historial_combinado, historial_powerby, secuencia
+    def limpiar_secuencia(*args):
+        global historial_numeros, historial_colores, historial_paridad, historial_combinado, historial_powerby
+        global estado_script, patron_activo, numeros_prediccion, giros_restantes
 
-        seq_row.controls.clear()
-        secuencia.clear()
-        qty_text.value = "Secuencia (0):"
+        historial_numeros.clear()
+        historial_colores.clear()
+        historial_paridad.clear()
+        historial_combinado.clear()
+        historial_powerby.clear()
 
         estado_script = "ESPERANDO"
         patron_activo = "-"
         numeros_prediccion = set()
-        giros_restantes = 0
-        historial_numeros = deque(maxlen=20)
-        historial_colores = deque(maxlen=7)
-        historial_combinado = deque(maxlen=7)
-        historial_powerby = deque(maxlen=7)
-
-        jugada_activa_txt.value = ""
-        patron_activo_txt.value = ""
-        estado_script = "ESPERANDO"
         giros_restantes = 7
-        mensajes_txt.value = f"Esperando las proximas {giros_restantes} jugadas."
-        numeros_activos_txt.value = ""
+
+        mensajes_txt.value = "Secuencia limpiada. Esperando datos..."
         page.update()
 
     def on_ruleta_change(e):
