@@ -3,7 +3,7 @@ import flet as ft
 import numpy as np
 import csv
 from collections import Counter, deque
-from Programas_auxiliares import load_db
+from Programas_auxiliares import load_db, log_uso
 
 ROJOS = {1,3,5,7,9,12,14,16,18,19,21,23,25,27,30,32,34,36}
 NEGROS = set(range(1,37)) - ROJOS
@@ -576,4 +576,8 @@ def main(page: ft.Page):
     )
 
 port = int(os.environ.get("PORT", 8000))
+
+log_uso("historial_uso.jsonl")
+
 ft.app(target=main, view=ft.WEB_BROWSER, host="0.0.0.0", port=port)
+
