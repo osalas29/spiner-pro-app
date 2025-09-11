@@ -1,7 +1,6 @@
 ﻿import os, platform, socket, getpass, json
 from datetime import datetime, timezone
 from typing import Tuple
-import construir_patrones
 import flet as ft
 import numpy as np
 import csv
