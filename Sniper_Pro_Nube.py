@@ -124,14 +124,24 @@ def main(page: ft.Page):
         # Comprobar si hubo acierto
         if numero in numeros_prediccion:
             mensajes_txt.value = f"¡ACIERTO! ({patron_activo}). Reiniciar todo para Volver Analizar..."
+            aciertos_txt.value = "¡ACIERTO!"
+            page.update()
             limpiar_secuencia()
             return
 
         # Comprobar si se acabó la ventana
         if giros_restantes <= 0:
             mensajes_txt.value = f"Ventana cerrada para ({patron_activo}). Reiniciar todo para Volver Analizar..."
+            aciertos_txt.value = "CERRADA"
+            page.update()
             limpiar_secuencia()
             return
+
+    # Actualizar contador si no pasa nada
+    mensajes_txt.value = f"Ventana de acierto: {giros_restantes} giros restantes."
+    aciertos_txt.value = f"{giros_restantes} giros"
+    page.update()
+
 
         # Actualizar contador si no pasa nada
         mensajes_txt.value = f"Ventana de acierto: {giros_restantes} giros restantes."
