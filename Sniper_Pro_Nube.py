@@ -195,7 +195,7 @@ def main(page: ft.Page):
         else:  # Si no estábamos en predicción, entonces analizamos.
             manejar_estado_analizando()
 
-    def limpiar_secuencia():
+    def limpiar_secuencia(e=None):
         global estado_script, patron_activo, numeros_prediccion, giros_restantes, historial_numeros, historial_colores,\
             historial_combinado, historial_powerby
 
