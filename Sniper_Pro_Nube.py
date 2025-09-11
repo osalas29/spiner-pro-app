@@ -5,7 +5,7 @@ import flet as ft
 import numpy as np
 import csv
 from collections import Counter, deque
-from Programas_auxiliares import load_db, log_uso
+from Programas_auxiliares import load_db, log_uso, leer_historial
 
 ROJOS = {1,3,5,7,9,12,14,16,18,19,21,23,25,27,30,32,34,36}
 NEGROS = set(range(1,37)) - ROJOS
@@ -606,7 +606,11 @@ def main(page: ft.Page):
         )
     )
 
-log_uso("historial_uso.json")
+log_uso()
+
+# Mostrar últimos registros en los Logs de Render
+for r in leer_historial(5):
+    print("📌 Registro:", r)
 
 
 ft.app(target=main)
