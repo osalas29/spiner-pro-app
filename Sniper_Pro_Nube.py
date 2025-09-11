@@ -139,54 +139,64 @@ def main(page: ft.Page):
     def manejar_estado_analizando():
         global estado_script, giros_restantes, historial_powerby
 
+        # --- Power By ---
         buscar_patron, l_num = crear_mensaje(PATRONES_POWER_BY[0]['patrones'], historial_powerby)
-        if buscar_patron !='':
+        if buscar_patron != '':
             jugada_activa_txt.value = buscar_patron
             patron_activo_txt.value = "PATRONES POWER BY"
             estado_script = "ACTIVA"
             giros_restantes = 10
+            aciertos_txt.value = f"{giros_restantes} giros"
             numeros_activos_txt.value = l_num
             mensajes_txt.value = f"Faltan {giros_restantes} tiros, para tener el acierto.."
             page.update()
             return
 
+        # --- Combinados ---
         buscar_patron, l_num = crear_mensaje(PATRONES_COMBINADOS[0]['patrones'], historial_powerby)
-        if buscar_patron !='':
+        if buscar_patron != '':
             jugada_activa_txt.value = buscar_patron
             patron_activo_txt.value = "PATRONES COMBINADOS"
             estado_script = "ACTIVA"
             giros_restantes = 10
+            aciertos_txt.value = f"{giros_restantes} giros"
             numeros_activos_txt.value = l_num
             mensajes_txt.value = f"Faltan {giros_restantes} tiros, para tener el acierto.."
             page.update()
             return
 
+        # --- Colores ---
         buscar_patron, l_num = crear_mensaje(PATRONES_COLORES[0]['patrones'], historial_colores)
-        if buscar_patron !='':
+        if buscar_patron != '':
             jugada_activa_txt.value = buscar_patron
             patron_activo_txt.value = "PATRONES COLORES"
             estado_script = "ACTIVA"
             giros_restantes = 10
-            mensajes_txt.value = f"Faltan {giros_restantes} tiros, para tener el acierto.."
+            aciertos_txt.value = f"{giros_restantes} giros"
             numeros_activos_txt.value = l_num
+            mensajes_txt.value = f"Faltan {giros_restantes} tiros, para tener el acierto.."
             page.update()
             return
 
-        buscar_patron, l_num = crear_mensaje(PATRONES_PARIDAD[0]['patrones'], historial_colores)
-        if buscar_patron !='':
+        # --- Paridad ---
+        buscar_patron, l_num = crear_mensaje(PATRONES_PARIDAD[0]['patrones'], historial_paridad)
+        if buscar_patron != '':
             jugada_activa_txt.value = buscar_patron
             patron_activo_txt.value = "PATRONES PARIDAD"
             estado_script = "ACTIVA"
             giros_restantes = 10
-            mensajes_txt.value = f"Faltan {giros_restantes} tiros, para tener el acierto.."
+            aciertos_txt.value = f"{giros_restantes} giros"
             numeros_activos_txt.value = l_num
+            mensajes_txt.value = f"Faltan {giros_restantes} tiros, para tener el acierto.."
             page.update()
             return
 
+        # --- Si no se activó ningún patrón ---
         jugada_activa_txt.value = ""
         patron_activo_txt.value = ""
         estado_script = "ANALIZANDO"
         giros_restantes = 0
+        aciertos_txt.value = "—"
         mensajes_txt.value = f"Continuamos Analizando Ultimos Patrones."
         numeros_activos_txt.value = ""
         page.update()
@@ -239,7 +249,7 @@ def main(page: ft.Page):
         giros_restantes = 0
         historial_numeros = deque(maxlen=20)
         historial_colores = deque(maxlen=7)
-        historial_combinado = deque(maxlen=7)  # Los patrones combinados tienen 14 caracteres (7 pares de 2)
+        historial_combinado = deque(maxlen=7)# Los patrones combinados tienen 14 caracteres (7 pares de 2)
         historial_powerby = deque(maxlen=7)  # Los patrones combinados tienen 21 caracteres (7 pares de 3)
 
         jugada_activa_txt.value = ""
@@ -247,7 +257,9 @@ def main(page: ft.Page):
         estado_script = "ESPERANDO"
         giros_restantes = 7
         mensajes_txt.value = f"Esperando las proximas {giros_restantes} jugadas."
+        # REEMPLAZA POR
         numeros_activos_txt.value = ""
+        aciertos_txt.value = "—"
         page.update()
 
     def on_ruleta_change(e):
