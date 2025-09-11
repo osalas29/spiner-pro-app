@@ -139,6 +139,20 @@ def log_uso(_=None):
 
     return registro
 
+def leer_historial(limit=10):
+    import os, psycopg2
+    DATABASE_URL = os.getenv("DATABASE_URL")
+    try:
+        conn = psycopg2.connect(DATABASE_URL)
+        cur = conn.cursor()
+        cur.execute("SELECT fecha_hora, dispositivo, ip_publica FROM historial_uso ORDER BY id DESC LIMIT %s;", (limit,))
+        registros = cur.fetchall()
+        cur.close()
+        conn.close()
+        return registros
+    except Exception as e:
+        print("Error al leer historial:", e)
+        return []
 
 def find_index_by_id(data, ruleta: str):
     for i, rec in enumerate(data):
