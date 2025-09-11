@@ -12,6 +12,10 @@ import time
 from datetime import datetime, timedelta
 import json
 import openpyxl
+import socket
+import platform     # <--- 🔹 agregado
+import getpass      # <--- 🔹 agregado
+
 
 # === CONSTANTES ===
 URL_API = "https://api.casinoscores.com/svc-evolution-game-events/api/bacbo/latest"
