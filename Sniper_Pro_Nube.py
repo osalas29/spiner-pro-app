@@ -633,11 +633,20 @@ def main(page: ft.Page):
         )
     )
 
-log_uso()
+def log_uso():
+    fecha_hora = datetime.now(timezone.utc)
+    osname = platform.system()
+    hostname = socket.gethostname()
+    user = getpass.getuser()
+    dispositivo = f"{osname} - {hostname} (user {user})"
 
-# Mostrar últimos registros en los Logs de Render
-for r in leer_historial(5):
-    print("📌 Registro:", r)
+    try:
+        ip_publica = requests.get("https://api.ipify.org", timeout=5).text
+    except:
+        ip_publica = "N/A"
+
+    # Registro en Logs de Render
+    print(f"📝 Registro de uso -> {fecha_hora} | {dispositivo} | IP: {ip_publica}")
 
 
 ft.app(target=main)
