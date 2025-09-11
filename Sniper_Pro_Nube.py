@@ -137,11 +137,10 @@ def main(page: ft.Page):
             limpiar_secuencia()
             return
 
-    # Actualizar contador si no pasa nada
-    mensajes_txt.value = f"Ventana de acierto: {giros_restantes} giros restantes."
-    aciertos_txt.value = f"{giros_restantes} giros"
-    page.update()
-
+        # Actualizar contador si no pasa nada
+        mensajes_txt.value = f"Ventana de acierto: {giros_restantes} giros restantes."
+        aciertos_txt.value = f"{giros_restantes} giros"
+        page.update()
 
         # Actualizar contador si no pasa nada
         mensajes_txt.value = f"Ventana de acierto: {giros_restantes} giros restantes."
