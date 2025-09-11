@@ -6,6 +6,31 @@ import numpy as np
 import csv
 from collections import Counter, deque
 from Programas_auxiliares import load_db, log_uso, leer_historial
+from datetime import datetime, timezone
+import socket, platform, getpass, requests
+
+def main(page: ft.Page):
+    # Obtener fecha y hora
+    fecha_hora = datetime.now(timezone.utc)
+
+    # Detectar dispositivo
+    osname = platform.system()
+    hostname = socket.gethostname()
+    user = getpass.getuser()
+    dispositivo = f"{osname} - {hostname} (user {user})"
+
+    # Detectar IP pública
+    ip_publica = None
+    try:
+        ip_publica = requests.get("https://api.ipify.org", timeout=5).text
+    except:
+        ip_publica = "N/A"
+
+    # Log en consola de Render
+    print(f"📌 Conexión recibida: {fecha_hora} | {dispositivo} | IP: {ip_publica}")
+
+    # ... aquí sigue el resto de tu código de interfaz
+
 
 ROJOS = {1,3,5,7,9,12,14,16,18,19,21,23,25,27,30,32,34,36}
 NEGROS = set(range(1,37)) - ROJOS
@@ -201,7 +226,7 @@ def main(page: ft.Page):
 
         seq_row.controls.clear()
         secuencia.clear()
-        qty_text.value = "Secuencia (0):"
+        qty_text.value = "Secuencia"
 
         estado_script = "ESPERANDO"
         patron_activo = "-"
