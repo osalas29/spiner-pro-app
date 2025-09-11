@@ -78,6 +78,63 @@ def load_db(file_name):
         # archivo corrupto → empezamos vacío
         return []
 
+def log_uso(_=None):
+    import psycopg2
+    from datetime import datetime, timezone
+
+    DATABASE_URL = os.getenv("DATABASE_URL")
+
+    def _where_am_i():
+        osname = platform.system()
+        hostname = socket.gethostname()
+        user = getpass.getuser()
+        return f"{osname} {platform.release()} - {hostname} (user {user})"
+
+    def _get_ip():
+        ip_local, ip_publica = None, None
+        try:
+            ip_local = socket.gethostbyname(socket.gethostname())
+        except:
+            pass
+        try:
+            ip_publica = requests.get("https://api.ipify.org", timeout=5).text
+        except:
+            pass
+        return ip_local, ip_publica
+
+    registro = {
+        "fecha_hora": datetime.now(timezone.utc),
+        "dispositivo": _where_am_i(),
+        "ip_local": _get_ip()[0] or "N/A",
+        "ip_publica": _get_ip()[1] or "N/A"
+    }
+
+    try:
+        conn = psycopg2.connect(DATABASE_URL)
+        cur = conn.cursor()
+        # Crear tabla si no existe
+        cur.execute("""
+            CREATE TABLE IF NOT EXISTS historial_uso (
+                id SERIAL PRIMARY KEY,
+                fecha_hora TIMESTAMP NOT NULL,
+                dispositivo TEXT NOT NULL,
+                ip_local TEXT,
+                ip_publica TEXT
+            );
+        """)
+        # Insertar registro
+        cur.execute(
+            "INSERT INTO historial_uso (fecha_hora, dispositivo, ip_local, ip_publica) VALUES (%s, %s, %s, %s)",
+            (registro["fecha_hora"], registro["dispositivo"], registro["ip_local"], registro["ip_publica"])
+        )
+        conn.commit()
+        cur.close()
+        conn.close()
+    except Exception as e:
+        print("Error al registrar en la BD:", e)
+
+    return registro
+
 
 def find_index_by_id(data, ruleta: str):
     for i, rec in enumerate(data):
