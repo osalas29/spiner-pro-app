@@ -80,6 +80,9 @@ def color_fg(n):
 
 
 def main(page: ft.Page):
+    # Registrar uso cada vez que alguien abre la app
+    log_uso()
+
     page.title = "Roulette Pro Clean Version. 2.0"
     page.padding = 12
     page.window_width = 470
