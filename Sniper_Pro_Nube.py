@@ -8,6 +8,7 @@ from collections import Counter, deque
 from Programas_auxiliares import load_db, log_uso, leer_historial
 from datetime import datetime, timezone
 import socket, platform, getpass, requests
+print("hello word")
 
 def main(page: ft.Page):
     # Obtener fecha y hora
@@ -226,7 +227,8 @@ def main(page: ft.Page):
 
         seq_row.controls.clear()
         secuencia.clear()
-        qty_text.value = "Secuencia"
+        qty_text.content = ft.Text("Secuencia", color="black")
+        qty_text.bgcolor = "white"
 
         estado_script = "ESPERANDO"
         patron_activo = "-"
