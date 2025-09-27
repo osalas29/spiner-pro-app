@@ -255,15 +255,13 @@ def main(page: ft.Page):
         page.update()
 
     def manejar_estado_analizando():
-        global estado_script, giros_restantes, historial_powerby
+        global estado_script, giros_restantes, historial_powerby, numeros_prediccion
 
         if PATRONES_POWER_BY and PATRONES_POWER_BY[0].get("Patrones"):
             # Llama a la función CORREGIDA de construir_patrones.py
             jugada_def = construir_patrones.obtener_jugada_por_patron_powerby(historial_powerby)
             
             if jugada_def:
-                global numeros_prediccion # <--- CORRECCIÓN APLICADA
-                
                 # 1. Construye el texto de la jugada
                 color_jugar = jugada_def.get("color", "—")
                 paridad_jugar = jugada_def.get("Paridad", "—")
@@ -290,14 +288,11 @@ def main(page: ft.Page):
                 numeros_activos_txt.value = l_num
                 page.update()
                 return
-
         if PATRONES_COMBINADOS and PATRONES_COMBINADOS[0].get("Patrones"):
             # Llama a la función CORREGIDA de construir_patrones.py para el historial Color/Posicion
             jugada_def = construir_patrones.obtener_jugada_por_patron_combinado(historial_comb_col_pos)
             
             if jugada_def:
-                global numeros_prediccion # <--- CORRECCIÓN APLICADA: Declaración Global al inicio
-                
                 # 1. Construye el texto de la jugada
                 color_jugar = jugada_def.get("color", "—")
                 posicion_jugar = jugada_def.get("Posicion", jugada_def.get("Paridad", "—")) 
@@ -323,25 +318,22 @@ def main(page: ft.Page):
                 numeros_activos_txt.value = l_num
                 page.update()
                 return
-
         if PATRONES_COMBINADOS and PATRONES_COMBINADOS[0].get("Patrones"):
-            # Llama a la función CORREGIDA de construir_patrones.py para el historial Color/Posicion
-            jugada_def = construir_patrones.obtener_jugada_por_patron_combinado(historial_comb_col_pos)
+            # Llama a la función CORREGIDA de construir_patrones.py para el historial Color/Paridad
+            jugada_def = construir_patrones.obtener_jugada_por_patron_combinado(historial_combinado)
             
             if jugada_def:
-                global numeros_prediccion # <--- CORRECCIÓN APLICADA: Declaración Global al inicio
-                
                 # 1. Construye el texto de la jugada
                 color_jugar = jugada_def.get("color", "—")
-                posicion_jugar = jugada_def.get("Posicion", jugada_def.get("Paridad", "—")) 
+                paridad_jugar = jugada_def.get("Paridad", "—") 
                 decenas = []
                 if jugada_def.get("Decena_1") or jugada_def.get("decena_1"): decenas.append("D1")
                 if jugada_def.get("Decena_2") or jugada_def.get("decena_2"): decenas.append("D2")
                 if jugada_def.get("Decena_3") or jugada_def.get("decena_3"): decenas.append("D3")
                 decenas_txt = " y ".join(decenas) if decenas else "ninguna decena"
                 
-                # Formato del mensaje: Jugar: Color - Posicion/Paridad - Decenas
-                buscar_patron = f"Jugar: {color_jugar} - {posicion_jugar} - {decenas_txt}"
+                # Formato del mensaje: Jugar: Color - Paridad - Decenas
+                buscar_patron = f"Jugar: {color_jugar} - {paridad_jugar} - {decenas_txt}"
                 
                 l_num = "-".join(str(n) for n in jugada_def.get("numeros", []))
                 
@@ -349,21 +341,18 @@ def main(page: ft.Page):
                 
                 # 2. Actualiza la interfaz (Flet) y el estado
                 jugada_activa_txt.value = buscar_patron
-                patron_activo_txt.value = "PATRONES COMBINADOS COLOR/POSICION"
+                patron_activo_txt.value = "PATRONES COMBINADOS COLOR/PARIDAD"
                 estado_script = "ACTIVA"
                 giros_restantes = 10
                 mensajes_txt.value = f"Giro: 1 de {giros_restantes} tiros, para tener el acierto.."
                 numeros_activos_txt.value = l_num
                 page.update()
                 return
-
         if PATRONES_COLORES and PATRONES_COLORES[0].get("Patrones"):
             # Llama a la función CORREGIDA de construir_patrones.py
             jugada_def = construir_patrones.obtener_jugada_por_patron_colores(historial_colores)
             
             if jugada_def:
-                global numeros_prediccion # <--- CORRECCIÓN APLICADA
-                
                 # 1. Construye el texto de la jugada
                 color = jugada_def.get("color")
                 decenas = []
@@ -390,14 +379,11 @@ def main(page: ft.Page):
                 numeros_activos_txt.value = l_num
                 page.update()
                 return
-
         if PATRONES_PARIDAD and PATRONES_PARIDAD[0].get("Patrones"):
             # Llama a la función CORREGIDA de construir_patrones.py
             jugada_def = construir_patrones.obtener_jugada_por_patron_paridad(historial_paridad)
             
             if jugada_def:
-                global numeros_prediccion # <--- CORRECCIÓN APLICADA
-                
                 # 1. Construye el texto de la jugada
                 paridad_jugar = jugada_def.get("Paridad", "—")
                 decenas = []
@@ -423,16 +409,6 @@ def main(page: ft.Page):
                 numeros_activos_txt.value = l_num
                 page.update()
                 return
-
-        # si no encontró nada
-        jugada_activa_txt.value = ""
-        patron_activo_txt.value = ""
-        estado_script = "ANALIZANDO"
-        giros_restantes = 0
-        mensajes_txt.value = f"Continuamos Analizando Ultimos Patrones."
-        numeros_activos_txt.value = ""
-        page.update()
-        return
 
 
     def procesar_numero(numero):
