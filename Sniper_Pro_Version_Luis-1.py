@@ -258,44 +258,130 @@ def main(page: ft.Page):
         global estado_script, giros_restantes, historial_powerby
 
         if PATRONES_POWER_BY and PATRONES_POWER_BY[0].get("Patrones"):
-            buscar_patron, l_num = crear_mensaje(PATRONES_POWER_BY[0]['Patrones'], historial_powerby)
-            if buscar_patron != '':
+            # Llama a la función CORREGIDA de construir_patrones.py
+            jugada_def = construir_patrones.obtener_jugada_por_patron_powerby(historial_powerby)
+            
+            if jugada_def:
+                # 1. Construye el texto de la jugada
+                # Asumo que los patrones Power By tienen campos 'color', 'Paridad' y 'decena_X' en el JSON.
+                color_jugar = jugada_def.get("color", "—")
+                paridad_jugar = jugada_def.get("Paridad", "—")
+                decenas = []
+                # Nota: Los campos de decena deben coincidir con los de Power By en el JSON (ej. 'Decena_1' o 'decena_1')
+                if jugada_def.get("Decena_1") or jugada_def.get("decena_1"): decenas.append("D1")
+                if jugada_def.get("Decena_2") or jugada_def.get("decena_2"): decenas.append("D2")
+                if jugada_def.get("Decena_3") or jugada_def.get("decena_3"): decenas.append("D3")
+                decenas_txt = " y ".join(decenas) if decenas else "ninguna decena"
+                
+                # Formato del mensaje: Jugar: Color - Paridad - Decenas
+                buscar_patron = f"Jugar: {color_jugar} - {paridad_jugar} - {decenas_txt}"
+                
+                # Formato de los números activos
+                l_num = "-".join(str(n) for n in jugada_def.get("numeros", []))
+                
+                global numeros_prediccion
+                numeros_prediccion = jugada_def.get("numeros", [])
+                
+                # 2. Actualiza la interfaz (Flet) y el estado
                 jugada_activa_txt.value = buscar_patron
                 patron_activo_txt.value = "PATRONES POWER BY"
                 estado_script = "ACTIVA"
                 giros_restantes = 10
-                numeros_activos_txt.value = l_num
                 mensajes_txt.value = f"Giro: 1 de {giros_restantes} tiros, para tener el acierto.."
+                numeros_activos_txt.value = l_num
                 page.update()
                 return
 
         if PATRONES_COMBINADOS and PATRONES_COMBINADOS[0].get("Patrones"):
-            buscar_patron, l_num = crear_mensaje(PATRONES_COMBINADOS[0]['Patrones'], historial_comb_col_pos)
-            if buscar_patron != '':
+            # Llama a la función CORREGIDA de construir_patrones.py para el historial Color/Posicion
+            jugada_def = construir_patrones.obtener_jugada_por_patron_combinado(historial_comb_col_pos)
+            
+            if jugada_def:
+                # 1. Construye el texto de la jugada
+                color_jugar = jugada_def.get("color", "—")
+                # Asumo que la Posición se guarda en el campo 'Posicion' o 'Paridad'
+                posicion_jugar = jugada_def.get("Posicion", jugada_def.get("Paridad", "—")) 
+                decenas = []
+                if jugada_def.get("Decena_1") or jugada_def.get("decena_1"): decenas.append("D1")
+                if jugada_def.get("Decena_2") or jugada_def.get("decena_2"): decenas.append("D2")
+                if jugada_def.get("Decena_3") or jugada_def.get("decena_3"): decenas.append("D3")
+                decenas_txt = " y ".join(decenas) if decenas else "ninguna decena"
+                
+                # Formato del mensaje: Jugar: Color - Posicion/Paridad - Decenas
+                buscar_patron = f"Jugar: {color_jugar} - {posicion_jugar} - {decenas_txt}"
+                
+                l_num = "-".join(str(n) for n in jugada_def.get("numeros", []))
+                
+                global numeros_prediccion
+                numeros_prediccion = jugada_def.get("numeros", [])
+                
+                # 2. Actualiza la interfaz (Flet) y el estado
                 jugada_activa_txt.value = buscar_patron
                 patron_activo_txt.value = "PATRONES COMBINADOS COLOR/POSICION"
                 estado_script = "ACTIVA"
                 giros_restantes = 10
-                numeros_activos_txt.value = l_num
                 mensajes_txt.value = f"Giro: 1 de {giros_restantes} tiros, para tener el acierto.."
+                numeros_activos_txt.value = l_num
                 page.update()
                 return
 
         if PATRONES_COMBINADOS and PATRONES_COMBINADOS[0].get("Patrones"):
-            buscar_patron, l_num = crear_mensaje(PATRONES_COMBINADOS[0]['Patrones'], historial_combinado)
-            if buscar_patron != '':
+            # Llama a la función CORREGIDA de construir_patrones.py para el historial Color/Paridad
+            jugada_def = construir_patrones.obtener_jugada_por_patron_combinado(historial_combinado)
+            
+            if jugada_def:
+                # 1. Construye el texto de la jugada
+                color_jugar = jugada_def.get("color", "—")
+                # Asumo que la Paridad se guarda en el campo 'Paridad'
+                paridad_jugar = jugada_def.get("Paridad", "—") 
+                decenas = []
+                if jugada_def.get("Decena_1") or jugada_def.get("decena_1"): decenas.append("D1")
+                if jugada_def.get("Decena_2") or jugada_def.get("decena_2"): decenas.append("D2")
+                if jugada_def.get("Decena_3") or jugada_def.get("decena_3"): decenas.append("D3")
+                decenas_txt = " y ".join(decenas) if decenas else "ninguna decena"
+                
+                # Formato del mensaje: Jugar: Color - Paridad - Decenas
+                buscar_patron = f"Jugar: {color_jugar} - {paridad_jugar} - {decenas_txt}"
+                
+                l_num = "-".join(str(n) for n in jugada_def.get("numeros", []))
+                
+                global numeros_prediccion
+                numeros_prediccion = jugada_def.get("numeros", [])
+                
+                # 2. Actualiza la interfaz (Flet) y el estado
                 jugada_activa_txt.value = buscar_patron
                 patron_activo_txt.value = "PATRONES COMBINADOS COLOR/PARIDAD"
                 estado_script = "ACTIVA"
                 giros_restantes = 10
-                numeros_activos_txt.value = l_num
                 mensajes_txt.value = f"Giro: 1 de {giros_restantes} tiros, para tener el acierto.."
+                numeros_activos_txt.value = l_num
                 page.update()
                 return
 
         if PATRONES_COLORES and PATRONES_COLORES[0].get("Patrones"):
-            buscar_patron, l_num = crear_mensaje(PATRONES_COLORES[0]['Patrones'], historial_colores)
-            if buscar_patron != '':
+            # Llama a la función CORREGIDA de construir_patrones.py, que maneja la inversión de la secuencia
+            jugada_def = construir_patrones.obtener_jugada_por_patron_colores(historial_colores)
+            
+            if jugada_def:
+                # 1. Construye el texto de la jugada basándose en el objeto JSON encontrado
+                color_jugar = jugada_def.get("color", "—")
+                decenas = []
+                if jugada_def.get("decena_1"): decenas.append("D1")
+                if jugada_def.get("decena_2"): decenas.append("D2")
+                if jugada_def.get("decena_3"): decenas.append("D3")
+                decenas_txt = " y ".join(decenas) if decenas else "ninguna decena"
+                
+                # Formato del mensaje (asumiendo que la sección de paridad/posición es '—' en esta estrategia)
+                buscar_patron = f"Jugar: {color_jugar} - — - {decenas_txt}"
+                
+                # Formato de los números activos (separados por guiones)
+                l_num = "-".join(str(n) for n in jugada_def.get("numeros", []))
+                
+                # Almacena los números de la jugada en la variable global de predicción
+                global numeros_prediccion
+                numeros_prediccion = jugada_def.get("numeros", [])
+                
+                # 2. Actualiza la interfaz (Flet) y el estado
                 jugada_activa_txt.value = buscar_patron
                 patron_activo_txt.value = "PATRONES COLORES"
                 estado_script = "ACTIVA"
@@ -306,8 +392,27 @@ def main(page: ft.Page):
                 return
 
         if PATRONES_PARIDAD and PATRONES_PARIDAD[0].get("Patrones"):
-            buscar_patron, l_num = crear_mensaje(PATRONES_PARIDAD[0]['Patrones'], historial_paridad)
-            if buscar_patron != '':
+            # Llama a la función CORREGIDA de construir_patrones.py
+            jugada_def = construir_patrones.obtener_jugada_por_patron_paridad(historial_paridad)
+            
+            if jugada_def:
+                # 1. Construye el texto de la jugada
+                paridad_jugar = jugada_def.get("Paridad", "—")
+                decenas = []
+                if jugada_def.get("Decena_1"): decenas.append("D1")
+                if jugada_def.get("Decena_2"): decenas.append("D2")
+                if jugada_def.get("Decena_3"): decenas.append("D3")
+                decenas_txt = " y ".join(decenas) if decenas else "ninguna decena"
+                
+                # Formato del mensaje (asumiendo que la sección de color/posición es '—' en esta estrategia)
+                buscar_patron = f"Jugar: — - {paridad_jugar} - {decenas_txt}"
+                
+                l_num = "-".join(str(n) for n in jugada_def.get("numeros", []))
+                
+                global numeros_prediccion
+                numeros_prediccion = jugada_def.get("numeros", [])
+                
+                # 2. Actualiza la interfaz
                 jugada_activa_txt.value = buscar_patron
                 patron_activo_txt.value = "PATRONES PARIDAD"
                 estado_script = "ACTIVA"
