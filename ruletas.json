@@ -1,0 +1,14 @@
+[
+  {
+    "ruleta": "Inmersive",
+    "max_numeros": 4200,
+    "API_1": "https://api.casinoscores.com/svc-evolution-game-events/api/immersiveroulette?page=",
+    "API_2": ",&size=29&sort=data.settledAt,desc&duration=72",
+    "API": "https://api.casinoscores.com/svc-evolution-game-events/api/immersiveroulette/latest"
+  },
+  {
+    "ruleta": "Auto-rulette",
+    "max_numeros": 6500,
+    "API": "https://api.casinoscores.com/svc-evolution-game-events/api/autoroulette?page=0&size=29&sort=data.settledAt,desc&duration=72"
+}
+]
