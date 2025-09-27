@@ -5,16 +5,13 @@ import numpy as np
 from collections import Counter
 import requests
 from urllib.parse import urlparse, parse_qs, urlencode, urlunparse
+import platform, getpass
 
 import os
 import pandas as pd
 import time
-from datetime import datetime, timedelta
+from datetime import datetime, timezone
 import json
-import openpyxl
-import socket
-import platform     # <--- 🔹 agregado
-import getpass      # <--- 🔹 agregado
 
 
 # === CONSTANTES ===
@@ -34,6 +31,93 @@ numeros_capturados = []  # Global temporal para mostrar todos los números captu
 
 # Ruta del chromedriver (asegúrate de que esté junto al .exe si empaquetas)
 chrome_driver_path = os.path.join(os.getcwd(), "chromedriver.exe")
+
+
+def set_query_param(url, **updates):
+    parts = urlparse(url)
+    q = parse_qs(parts.query)
+    for k, v in updates.items():
+        q[k] = [str(v)]
+    new_query = urlencode(q, doseq=True)
+    return urlunparse((parts.scheme, parts.netloc, parts.path, parts.params, new_query, parts.fragment))
+
+
+def _to_int(x, default=0):
+    try:
+        return int(x)
+    except Exception:
+        return default
+
+
+def parse_dt(x):
+    """
+    Acepta valores ISO (ej. '2025-09-11T12:34:56Z' o '2025-09-11 12:34:56'),
+    con/ sin zona, y timestamps (segundos o milisegundos).
+    Devuelve datetime **aware en UTC** para poder comparar sin errores.
+    """
+    if x is None:
+        return datetime.min.replace(tzinfo=timezone.utc)
+
+    # Timestamps numéricos (s/ms)
+    if isinstance(x, (int, float)) or (isinstance(x, str) and x.strip().isdigit()):
+        ts = float(x)
+        # Heurística: si es muy grande, asume milisegundos
+        if ts > 1e11:  # ~año 5138 en segundos; probablemente ms
+            ts /= 1000.0
+        return datetime.fromtimestamp(ts, tz=timezone.utc)
+
+    s = str(x).strip()
+    if not s:
+        return datetime.min.replace(tzinfo=timezone.utc)
+
+    # ISO con 'Z'
+    if s.endswith("Z"):
+        s = s[:-1] + "+00:00"
+
+    # ISO estándar
+    try:
+        dt = datetime.fromisoformat(s)
+        if dt.tzinfo is None:
+            dt = dt.replace(tzinfo=timezone.utc)
+        else:
+            dt = dt.astimezone(timezone.utc)
+        return dt
+    except Exception:
+        pass
+
+    # Formatos comunes
+    for fmt in ("%Y-%m-%d %H:%M:%S",
+                "%Y/%m/%d %H:%M:%S",
+                "%d/%m/%Y %H:%M:%S",
+                "%Y-%m-%d"):
+        try:
+            dt = datetime.strptime(s, fmt).replace(tzinfo=timezone.utc)
+            return dt
+        except Exception:
+            continue
+
+    # Fallback
+    return datetime.min.replace(tzinfo=timezone.utc)
+
+
+def guardar_jugada(reg_play):
+    """Guarda una jugada en el archivo historial_jugadas.json"""
+    HISTORIAL_FILE="historial_secuencias_jugadas.json"
+
+    try:
+        # Cargar historial actual
+        with open(HISTORIAL_FILE, "r") as f:
+            historial = json.load(f)
+    except (FileNotFoundError, json.JSONDecodeError):
+        historial = []
+
+    # Agregar la nueva jugada
+    historial.append(reg_play)
+
+    # Guardar nuevamente
+    with open(HISTORIAL_FILE, "w") as f:
+        json.dump(historial, f, indent=4, ensure_ascii=False)
+
 
 def set_query_param(url, **updates):
     parts = urlparse(url)
@@ -72,6 +156,20 @@ def normalize(row, outcome=None):
     }
 
 
+def read_csv(file_name):
+    if not pathlib.Path(file_name).exists():
+        return []
+    try:
+        df = pd.read_csv(file_name)
+        df = pd.DataFrame(df)
+        return df
+        #ultimo = df.tail(1).iloc[0]
+        #return ultimo.to_dict()
+    except Exception:
+        # archivo corrupto → empezamos vacío
+        return []
+
+
 def load_db(file_name):
     FILE = pathlib.Path(file_name)
     if not FILE.exists():
@@ -82,77 +180,6 @@ def load_db(file_name):
         # archivo corrupto → empezamos vacío
         return []
 
-def log_uso(_=None):
-    import psycopg2
-    from datetime import datetime, timezone
-
-    DATABASE_URL = os.getenv("DATABASE_URL")
-
-    def _where_am_i():
-        osname = platform.system()
-        hostname = socket.gethostname()
-        user = getpass.getuser()
-        return f"{osname} {platform.release()} - {hostname} (user {user})"
-
-    def _get_ip():
-        ip_local, ip_publica = None, None
-        try:
-            ip_local = socket.gethostbyname(socket.gethostname())
-        except:
-            pass
-        try:
-            ip_publica = requests.get("https://api.ipify.org", timeout=5).text
-        except:
-            pass
-        return ip_local, ip_publica
-
-    registro = {
-        "fecha_hora": datetime.now(timezone.utc),
-        "dispositivo": _where_am_i(),
-        "ip_local": _get_ip()[0] or "N/A",
-        "ip_publica": _get_ip()[1] or "N/A"
-    }
-
-    try:
-        conn = psycopg2.connect(DATABASE_URL)
-        cur = conn.cursor()
-        # Crear tabla si no existe
-        cur.execute("""
-            CREATE TABLE IF NOT EXISTS historial_uso (
-                id SERIAL PRIMARY KEY,
-                fecha_hora TIMESTAMP NOT NULL,
-                dispositivo TEXT NOT NULL,
-                ip_local TEXT,
-                ip_publica TEXT
-            );
-        """)
-        # Insertar registro
-        cur.execute(
-            "INSERT INTO historial_uso (fecha_hora, dispositivo, ip_local, ip_publica) VALUES (%s, %s, %s, %s)",
-            (registro["fecha_hora"], registro["dispositivo"], registro["ip_local"], registro["ip_publica"])
-        )
-        conn.commit()
-        cur.close()
-        conn.close()
-    except Exception as e:
-        print("Error al registrar en la BD:", e)
-
-    return registro
-
-def leer_historial(limit=10):
-    import os, psycopg2
-    DATABASE_URL = os.getenv("DATABASE_URL")
-    try:
-        conn = psycopg2.connect(DATABASE_URL)
-        cur = conn.cursor()
-        cur.execute("SELECT fecha_hora, dispositivo, ip_publica FROM historial_uso ORDER BY id DESC LIMIT %s;", (limit,))
-        registros = cur.fetchall()
-        cur.close()
-        conn.close()
-        return registros
-    except Exception as e:
-        print("Error al leer historial:", e)
-        return []
 
 def find_index_by_id(data, ruleta: str):
     for i, rec in enumerate(data):
@@ -527,3 +554,66 @@ def analizar_estabilidad(numeros_jugada, gatillos, numeros_lista, NUM_BLOQUES_ES
         tasas_por_bloque.append(tasa_bloque)
     desviacion_estandar = np.std(tasas_por_bloque) if tasas_por_bloque else 0
     return {"tasas_periodicas": tasas_por_bloque, "desviacion_estandar": desviacion_estandar}
+
+
+def log_uso(log_path="historial_uso.json"):
+    import requests, socket
+
+    def _now_local_iso():
+        return datetime.now().astimezone().isoformat(timespec="seconds")
+
+    def _try_android_id():
+        try:
+            from jnius import autoclass
+            PythonActivity = autoclass('org.kivy.android.PythonActivity')
+            SettingsSecure = autoclass('android.provider.Settings$Secure')
+            cr = PythonActivity.mActivity.getContentResolver()
+            aid = SettingsSecure.getString(cr, SettingsSecure.ANDROID_ID)
+            return aid
+        except Exception:
+            return None
+
+    def _where_am_i():
+        osname = platform.system()
+        hostname = socket.gethostname()
+        user = getpass.getuser()
+
+        # Detección Android
+        if 'ANDROID_ARGUMENT' in os.environ or 'ANDROID_BOOTLOGO' in os.environ:
+            aid = _try_android_id()
+            return f"Android (SSAID {aid})" if aid else "Android"
+
+        # Diferenciar macOS de iOS
+        if osname == "Darwin":
+            if "iPhone" in hostname or "iPad" in hostname:
+                return f"iOS - {hostname}"
+            return f"macOS {platform.mac_ver()[0]} - {hostname} (user {user})"
+
+        return f"{osname} {platform.release()} - {hostname} (user {user})"
+
+    def _get_ip():
+        ip_local = None
+        ip_publica = None
+        try:
+            ip_local = socket.gethostbyname(socket.gethostname())
+        except:
+            pass
+        try:
+            ip_publica = requests.get("https://api.ipify.org", timeout=5).text
+        except:
+            pass
+        return ip_local, ip_publica
+
+    ip_local, ip_publica = _get_ip()
+
+    registro = {
+        "Dia y Hora": _now_local_iso(),
+        "Donde_se_ejecuto_la_App": _where_am_i(),
+        "IP_local": ip_local or "N/A",
+        "IP_publica": ip_publica or "N/A"
+    }
+
+    with open(log_path, "a", encoding="utf-8") as f:
+        f.write(json.dumps(registro, ensure_ascii=False) + "\n")
+
+    return registro
