@@ -6,10 +6,9 @@ import itertools
 
 # =======================================================================
 # LÓGICA DEL MOTOR DE RULETA
-# (SIN CAMBIOS)
 # =======================================================================
 
-# --- MAPAS Y DICCIONARIOS GLOBALES (SIN CAMBIOS) ---
+# --- MAPAS Y DICCIONARIOS GLOBALES ---
 MAPA_COLORES = {
     0: 'G', 1: 'R', 2: 'N', 3: 'R', 4: 'N', 5: 'R', 6: 'N', 7: 'R', 8: 'N', 9: 'R',
     10: 'N', 11: 'N', 12: 'R', 13: 'N', 14: 'R', 15: 'N', 16: 'R', 17: 'N', 18: 'R',
@@ -114,12 +113,9 @@ def patron_inicial_12(tokens_bloque: List[str]) -> Tuple[Optional[str], Optional
 
 def patron_altos_bajos(bloque: List[int]) -> Tuple[Optional[str], Optional[str], Tuple[int, int]]:
     N = LONGITUD_BLOQUE
-    
-    # Usamos solo los últimos N números para el análisis de patrón (historial)
     analisis_bloque = bloque[-N:]
     
     if len(analisis_bloque) < N:
-        # Lógica para mostrar el conteo parcial 
         bajos_parcial = sum(1 for n in analisis_bloque if 1 <= n <= 18 or n == 0)
         altos_parcial = sum(1 for n in analisis_bloque if 19 <= n <= 36)
         return None, None, (bajos_parcial, altos_parcial) 
@@ -300,7 +296,6 @@ class RuletaEngine:
         self.post_count = 0
         self.post_tail.clear()
         self.prediccion_ab = "N/A"
-
 # =======================================================================
 # INTERFAZ FLET
 # =======================================================================
@@ -313,6 +308,8 @@ def main(page: ft.Page):
     # page.window_height = 750 
     page.bgcolor = ft.Colors.BLUE_GREY_900
 
+    # engine debe ser definido o importado si ejecutas esta parte sola.
+    # Asumiendo que el código anterior ya lo definió.
     engine = RuletaEngine(long_bloque=LONGITUD_BLOQUE)
 
     # Componentes de la Interfaz
@@ -326,7 +323,7 @@ def main(page: ft.Page):
         alignment=ft.MainAxisAlignment.START,
     )
     txt_block_label = ft.Text(f"Bloque Actual ({engine.N} giros):", color=ft.Colors.WHITE70)
-
+    
     # Vista de los últimos 2 números con color
     ultimos_dos_view = ft.Row(
         controls=[],
@@ -351,6 +348,7 @@ def main(page: ft.Page):
         vertical_alignment=ft.CrossAxisAlignment.START,
     )
     
+    # Contenedor de Jugada (Ancho=None para responsividad)
     jugada_container = ft.Container(
         content=numbers_view,
         padding=10,
@@ -358,7 +356,7 @@ def main(page: ft.Page):
         border=ft.border.all(2, ft.Colors.BLUE_GREY_700),
         bgcolor=ft.Colors.BLUE_GREY_900,
         alignment=ft.alignment.top_left,
-        width=None # Ajuste para que tome el 100% en móvil
+        width=None 
     )
 
     # --- Funciones de UI ---
@@ -395,8 +393,6 @@ def main(page: ft.Page):
         height = 40
         
         if number == 0:
-             # El 0 ahora se ajustará mejor al tamaño de la fila de 12 botones que está al lado
-             # Le damos un tamaño que cubra 3 filas.
              height = 130 
              width = 50 
         
@@ -490,4 +486,134 @@ def main(page: ft.Page):
                 ultimos_dos_view
             ], spacing=10, vertical_alignment=ft.CrossAxisAlignment.CENTER)
             
-            statu
+            status_row_container.controls.clear()
+            status_row_container.controls.append(status_row_controls)
+            
+        # 4. Lógica para mostrar la Jugada Final
+        numbers_view.controls.clear()
+        
+        jugada_display = []
+        if status == "JUGADA_ACTIVA" or status == "WAITING":
+            jugada_display = list(engine.jugada_set)
+        
+        numbers_view.controls.extend(
+            create_number_chip(n) for n in sorted(jugada_display)
+        )
+        
+        if not jugada_display and status in ["JUGADA_ACTIVA", "WAITING"]:
+            numbers_view.controls.append(ft.Text("Jugada vacía o no activa.", color=ft.Colors.RED_500))
+
+        # 5. Actualización del análisis de Altos/Bajos
+        txt_altos_bajos.value = f"Análisis Altos/Bajos: {engine.prediccion_ab}"
+        
+        if "ALTOS" in engine.prediccion_ab:
+            txt_altos_bajos.color = ft.Colors.RED_ACCENT_100
+        elif "BAJOS" in engine.prediccion_ab:
+            txt_altos_bajos.color = ft.Colors.WHITE
+        elif "N/A" in engine.prediccion_ab:
+            txt_altos_bajos.color = ft.Colors.PURPLE_ACCENT_100
+
+        page.update()
+
+    # --- Creación de UI MEJORADA y RESPONSIVE ---
+    btn_reset = ft.ElevatedButton(
+        text="🔴 RESET", 
+        on_click=reset_app,
+        icon=ft.Icons.RESTART_ALT, 
+        style=ft.ButtonStyle(
+            bgcolor=ft.Colors.RED_900,
+            color=ft.Colors.WHITE,
+            padding=ft.padding.symmetric(horizontal=15, vertical=10)
+        )
+    )
+    
+    # 1. Lista de números por columna (verticalmente)
+    row_3_nums = [n for n in range(3, 37, 3)] 
+    row_2_nums = [n for n in range(2, 37, 3)] 
+    row_1_nums = [n for n in range(1, 37, 3)] 
+
+    # 2. Contenedor de la cuadrícula de números 1-36 (12 filas de 3 botones)
+    numbers_grid = ft.Column(
+        controls=[
+            ft.Row(
+                controls=[
+                    create_roulette_button(row_3_nums[i]),
+                    create_roulette_button(row_2_nums[i]),
+                    create_roulette_button(row_1_nums[i]),
+                ],
+                spacing=0,
+                alignment=ft.MainAxisAlignment.START
+            ) for i in range(12)
+        ],
+        spacing=0,
+        horizontal_alignment=ft.CrossAxisAlignment.START
+    )
+
+    # 3. Contenedor del CERO (Ocupa el espacio de 3 filas de la columna de 1-36)
+    cero_col = ft.Column([create_roulette_button(0)], spacing=0, alignment=ft.MainAxisAlignment.START)
+
+
+    # 4. Uso de ft.ResponsiveRow para el tablero completo (CERO + NUMEROS)
+    full_board_container = ft.ResponsiveRow(
+        controls=[
+            # Columna del Cero: Toma 2/12 (1/6) del espacio en móvil/desktop
+            ft.Container(
+                content=cero_col,
+                col={"xs": 2}, 
+                alignment=ft.alignment.top_left,
+                padding=ft.padding.only(right=0)
+            ),
+            # Columna de los números 1-36: Toma 10/12 (5/6) del espacio
+            ft.Container(
+                content=numbers_grid,
+                col={"xs": 10}, 
+                alignment=ft.alignment.top_left,
+                padding=ft.padding.only(left=0) 
+            )
+        ],
+        spacing=0, 
+        run_spacing=0,
+        alignment=ft.MainAxisAlignment.START
+    )
+    
+    # El status container ahora sin width fijo
+    status_container = ft.Container(
+        content=status_content,
+        padding=10,
+        border_radius=10,
+        bgcolor=ft.Colors.BLUE_GREY_800,
+        width=None 
+    )
+
+    # Agrega todos los componentes a la página
+    page.add(
+        ft.Container(height=10),
+        ft.Row([btn_reset], alignment=ft.MainAxisAlignment.START),
+        ft.Container(height=10),
+        ft.Text("🔢 TABLERO DE RULETA (EUROPEA):", size=18, weight=ft.FontWeight.BOLD, color=ft.Colors.WHITE),
+        ft.Container(height=5),
+        full_board_container,
+        ft.Divider(height=20, color=ft.Colors.WHITE38),
+        status_container,
+        ft.Divider(height=20, color=ft.Colors.WHITE38),
+        ft.Text("🎯 JUGADA FINAL (Cruce Algoritmo/Color):", size=16, weight=ft.FontWeight.BOLD, color=ft.Colors.WHITE, text_align=ft.TextAlign.LEFT),
+        jugada_container
+    )
+    
+    update_ui({"status": "COLLECTING", "message": f"Listo para empezar. Ingresa {engine.N} números."})
+    
+
+# =======================================================================
+# INICIO DE LA APLICACIÓN
+# =======================================================================
+if __name__ == "__main__":
+    port = int(os.environ.get("PORT", 8080))
+    
+    ft.app(
+        target=main, 
+        view=ft.AppView.WEB_BROWSER, 
+        port=port, 
+        host="0.0.0.0"
+    )
+
+
