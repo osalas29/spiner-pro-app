@@ -7,6 +7,7 @@ import os
 
 # =======================================================================
 # LÓGICA DEL MOTOR DE RULETA
+# (SIN CAMBIOS EN ESTA SECCIÓN PARA PRESERVAR LA LÓGICA DE ANÁLISIS)
 # =======================================================================
 
 # --- MAPAS Y DICCIONARIOS GLOBALES (SIN CAMBIOS) ---
@@ -219,7 +220,7 @@ def calcular_jugada(bloque: List[int]) -> dict:
     }
 
 
-# --- CLASE MOTOR DE ESTADO PARA FLET ---
+# --- CLASE MOTOR DE ESTADO PARA FLET (SIN CAMBIOS) ---
 class RuletaEngine:
     def __init__(self, long_bloque: int = 7):
         self.N = long_bloque
@@ -315,16 +316,16 @@ class RuletaEngine:
         self.post_count = 0
         self.post_tail.clear()
         self.prediccion_ab = "N/A"
-
 # =======================================================================
-# INTERFAZ FLET
+# INTERFAZ FLET (AJUSTES DE TAMAÑO)
 # =======================================================================
 
 def main(page: ft.Page):
     page.title = "Bot de Ruleta - Flet Expert Mode 🚀"
     page.vertical_alignment = ft.MainAxisAlignment.START
-    page.window_width = 550 
-    page.window_height = 750 
+    # AJUSTE: Reducir el tamaño de la ventana para una vista compacta
+    page.window_width = 380 
+    page.window_height = 650 
     page.bgcolor = ft.Colors.BLUE_GREY_900
 
     engine = RuletaEngine(long_bloque=LONGITUD_BLOQUE)
@@ -336,15 +337,16 @@ def main(page: ft.Page):
     block_view = ft.Row(
         controls=[],
         wrap=True,
-        spacing=5,
+        # AJUSTE: Reducir espaciado
+        spacing=3, 
         alignment=ft.MainAxisAlignment.START,
     )
-    txt_block_label = ft.Text(f"Bloque Actual ({engine.N} giros):", color=ft.Colors.WHITE70)
+    txt_block_label = ft.Text(f"Bloque Actual ({engine.N} giros):", color=ft.Colors.WHITE70, size=12) # AJUSTE: tamaño de fuente
 
     # Vista de los últimos 2 números con color
     ultimos_dos_view = ft.Row(
         controls=[],
-        spacing=5,
+        spacing=3, # AJUSTE: Reducir espaciado
         alignment=ft.MainAxisAlignment.START,
         vertical_alignment=ft.CrossAxisAlignment.CENTER
     )
@@ -360,19 +362,19 @@ def main(page: ft.Page):
     numbers_view = ft.Row(
         controls=[],
         wrap=True, 
-        spacing=8,
+        spacing=4, # AJUSTE: Reducir espaciado
         alignment=ft.MainAxisAlignment.START, 
         vertical_alignment=ft.CrossAxisAlignment.START,
     )
     
     jugada_container = ft.Container(
         content=numbers_view,
-        padding=10,
+        padding=5, # AJUSTE: Reducir padding
         border_radius=10,
         border=ft.border.all(2, ft.Colors.BLUE_GREY_700),
         bgcolor=ft.Colors.BLUE_GREY_900,
         alignment=ft.alignment.top_left,
-        width=530 
+        width=360 # AJUSTE: Reducir el ancho del contenedor
     )
 
     # --- Funciones de UI ---
@@ -383,15 +385,15 @@ def main(page: ft.Page):
         if token == 'N': return ft.Colors.BLACK87
         return ft.Colors.GREEN_700
         
-    def create_number_chip(number: int, size: int = 35) -> ft.Container:
+    def create_number_chip(number: int, size: int = 28) -> ft.Container: # AJUSTE: Reducir tamaño del chip
         color = get_number_color(number)
         return ft.Container(
-            content=ft.Text(str(number), weight=ft.FontWeight.BOLD, color=ft.Colors.WHITE),
+            content=ft.Text(str(number), weight=ft.FontWeight.BOLD, color=ft.Colors.WHITE, size=12), # AJUSTE: tamaño de fuente
             width=size,
             height=size,
             alignment=ft.alignment.center,
             bgcolor=color,
-            border_radius=ft.border_radius.all(20),
+            border_radius=ft.border_radius.all(14), # AJUSTE: radio acorde
         )
 
     def submit_spin(num: int):
@@ -403,15 +405,19 @@ def main(page: ft.Page):
         engine.reset_all()
         update_ui({"status": "RESET", "message": "Reinicio manual completado."}) 
 
+    # AJUSTE: Reducir el tamaño de los botones de la ruleta
+    BUTTON_SIZE = 38 
+    ZERO_HEIGHT = BUTTON_SIZE * 3 + 2 # Altura ajustada a las 3 filas
+
     def create_roulette_button(number: int) -> ft.Container:
         color = get_number_color(number)
         
-        width = 40 
-        height = 40
+        width = BUTTON_SIZE 
+        height = BUTTON_SIZE
         
         if number == 0:
-             height = 130 
-             width = 50 
+             height = ZERO_HEIGHT # 3 filas de alto
+             width = BUTTON_SIZE + 10 # Un poco más ancho para el 0
         
         btn = ft.ElevatedButton(
             text=str(number),
@@ -420,7 +426,7 @@ def main(page: ft.Page):
                 shape=ft.RoundedRectangleBorder(radius=5),
                 bgcolor=color,
                 color=ft.Colors.WHITE,
-                padding=ft.padding.all(5)
+                padding=ft.padding.all(3) # AJUSTE: Reducir padding interno
             ),
             width=width,
             height=height,
@@ -429,9 +435,9 @@ def main(page: ft.Page):
     
     # REFERENCIA GLOBAL AL CONTENIDO DEL ft.Container DE ESTADO
     status_content = ft.Column([
-        ft.Text("ESTADO:", weight=ft.FontWeight.BOLD, color=ft.Colors.WHITE),
+        ft.Text("ESTADO:", weight=ft.FontWeight.BOLD, color=ft.Colors.WHITE, size=14), # AJUSTE: tamaño de fuente
         ft.Column([txt_status]), 
-        ft.Divider(height=10, color=ft.Colors.WHITE10),
+        ft.Divider(height=5, color=ft.Colors.WHITE10), # AJUSTE: reducir divisor
         
         # Bloque Actual con chips de color (Index 3)
         ft.Column([
@@ -439,7 +445,7 @@ def main(page: ft.Page):
             block_view
         ]),
         
-        ft.Divider(height=10, color=ft.Colors.WHITE10),
+        ft.Divider(height=5, color=ft.Colors.WHITE10), # AJUSTE: reducir divisor
         txt_altos_bajos, 
     ])
     
@@ -458,7 +464,8 @@ def main(page: ft.Page):
         display_history.reverse() 
         
         block_view.controls.extend(
-            create_number_chip(n) for n in display_history
+            # Usar el tamaño ajustado de 28
+            create_number_chip(n, size=28) for n in display_history 
         )
         
         # 2. ACTUALIZACIÓN DE "ÚLTIMOS 2" (Calculado desde el historial completo)
@@ -469,9 +476,9 @@ def main(page: ft.Page):
         ultimos_dos_nums.reverse()
         
         if ultimos_dos_nums: 
-            ultimos_dos_view.controls.append(ft.Text("Últimos 2:", color=ft.Colors.WHITE70, size=14, weight=ft.FontWeight.BOLD))
+            ultimos_dos_view.controls.append(ft.Text("Últimos 2:", color=ft.Colors.WHITE70, size=12, weight=ft.FontWeight.BOLD)) # AJUSTE: tamaño de fuente
             ultimos_dos_view.controls.extend(
-                create_number_chip(n, size=28) for n in ultimos_dos_nums
+                create_number_chip(n, size=24) for n in ultimos_dos_nums # AJUSTE: Chips más pequeños aquí
             )
         
         # 3. Lógica de Actualización de Status
@@ -481,8 +488,6 @@ def main(page: ft.Page):
             # Si hay reinicio o acierto, el bloque base ya está acortado/vaciado.
             txt_status.value = f"🎉 {message}" if status == "ACIERTO" else f"🟢 {message}"
             txt_status.color = ft.Colors.GREEN_ACCENT_700
-            
-            # Limpiamos los últimos 2 si el historial es muy corto (ya lo hicimos arriba)
             
             # Mostramos el estado principal
             status_row_container.controls.clear()
@@ -511,12 +516,12 @@ def main(page: ft.Page):
             status_row_controls = ft.Row([
                 txt_status, 
                 ultimos_dos_view
-            ], spacing=10, vertical_alignment=ft.CrossAxisAlignment.CENTER)
+            ], spacing=5, vertical_alignment=ft.CrossAxisAlignment.CENTER) # AJUSTE: Reducir espaciado
             
             status_row_container.controls.clear()
             status_row_container.controls.append(status_row_controls)
             
-        # 4. Lógica para mostrar la Jugada Final (Sin Cambios)
+        # 4. Lógica para mostrar la Jugada Final
         numbers_view.controls.clear()
         
         jugada_display = []
@@ -524,13 +529,14 @@ def main(page: ft.Page):
             jugada_display = list(engine.jugada_set)
         
         numbers_view.controls.extend(
-            create_number_chip(n) for n in sorted(jugada_display)
+            # Usar el tamaño ajustado de 28
+            create_number_chip(n, size=28) for n in sorted(jugada_display) 
         )
         
         if not jugada_display and status in ["JUGADA_ACTIVA", "WAITING"]:
-            numbers_view.controls.append(ft.Text("Jugada vacía o no activa.", color=ft.Colors.RED_500))
+            numbers_view.controls.append(ft.Text("Jugada vacía o no activa.", color=ft.Colors.RED_500, size=14)) # AJUSTE: tamaño de fuente
 
-        # 5. Actualización del análisis de Altos/Bajos (Sin Cambios)
+        # 5. Actualización del análisis de Altos/Bajos
         txt_altos_bajos.value = f"Análisis Altos/Bajos: {engine.prediccion_ab}"
         
         if "ALTOS" in engine.prediccion_ab:
@@ -542,7 +548,7 @@ def main(page: ft.Page):
 
         page.update()
 
-    # --- Creación de UI (Sin Cambios) ---
+    # --- Creación de UI (Ajustes de Diseño) ---
     btn_reset = ft.ElevatedButton(
         text="🔴 RESET", 
         on_click=reset_app,
@@ -550,12 +556,13 @@ def main(page: ft.Page):
         style=ft.ButtonStyle(
             bgcolor=ft.Colors.RED_900,
             color=ft.Colors.WHITE,
-            padding=ft.padding.symmetric(horizontal=15, vertical=10)
+            padding=ft.padding.symmetric(horizontal=10, vertical=5) # AJUSTE: Reducir padding
         )
     )
 
     cero_col = ft.Column([create_roulette_button(0)], spacing=0, horizontal_alignment=ft.CrossAxisAlignment.START, alignment=ft.MainAxisAlignment.CENTER)
     
+    # Se usan las mismas filas de números, pero con botones más pequeños (BUTTON_SIZE = 38)
     row_3_nums = [n for n in range(1, 37) if n % 3 == 0]
     row_3_btns = [create_roulette_button(n) for n in row_3_nums]
     row_3 = ft.Row(row_3_btns, spacing=0, alignment=ft.MainAxisAlignment.START)
@@ -572,8 +579,8 @@ def main(page: ft.Page):
 
     full_board_row = ft.Row(
         controls=[cero_col, roulette_grid_of_rows],
-        spacing=0, 
-        alignment=ft.MainAxisAlignment.START, 
+        spacing=2, # AJUSTE: Reducir espaciado entre el 0 y la parrilla
+        alignment=ft.MainAxisAlignment.CENTER, # Centrar la parrilla
         vertical_alignment=ft.CrossAxisAlignment.START 
     )
     
@@ -582,20 +589,19 @@ def main(page: ft.Page):
         padding=10,
         border_radius=10,
         bgcolor=ft.Colors.BLUE_GREY_800,
-        width=565
+        width=360 # AJUSTE: Reducir el ancho del contenedor
     )
 
     # Agrega todos los componentes a la página
     page.add(
-        ft.Container(height=10),
+        ft.Container(height=5), # AJUSTE: Reducir espacio superior
         ft.Row([btn_reset], alignment=ft.MainAxisAlignment.START),
-        ft.Container(height=10),
-        ft.Container(height=5),
+        ft.Container(height=5), # AJUSTE: Reducir espacio
         full_board_row,
-        ft.Divider(height=20, color=ft.Colors.WHITE38),
+        ft.Divider(height=10, color=ft.Colors.WHITE38), # AJUSTE: Reducir divisor
         status_container,
-        ft.Divider(height=20, color=ft.Colors.WHITE38),
-        ft.Text("🎯 JUGADA FINAL (Cruce Algoritmo/Color):", size=16, weight=ft.FontWeight.BOLD, color=ft.Colors.WHITE, text_align=ft.TextAlign.LEFT),
+        ft.Divider(height=10, color=ft.Colors.WHITE38), # AJUSTE: Reducir divisor
+        ft.Text("🎯 JUGADA FINAL (Cruce Algoritmo/Color):", size=14, weight=ft.FontWeight.BOLD, color=ft.Colors.WHITE, text_align=ft.TextAlign.LEFT), # AJUSTE: tamaño de fuente
         jugada_container
     )
     
@@ -610,7 +616,9 @@ if __name__ == "__main__":
     
     ft.app(
         target=main, 
+        # Mantener vista WEB_BROWSER
         view=ft.AppView.WEB_BROWSER, 
         port=port, 
         host="0.0.0.0"
     )
+
