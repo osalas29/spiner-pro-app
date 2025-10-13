@@ -325,7 +325,7 @@ def main(page: ft.Page):
     page.title = "Bot de Ruleta - Flet Expert Mode 🚀"
     page.vertical_alignment = ft.MainAxisAlignment.START
     
-    # AJUSTE: Reducir el tamaño de la ventana para un móvil típico
+    # Ajustar el ancho de la ventana a un valor que funcione para la mayoría de los móviles.
     page.window_width = 380 
     page.window_height = 650 
     page.bgcolor = ft.Colors.BLUE_GREY_900
@@ -383,7 +383,8 @@ def main(page: ft.Page):
         border=ft.border.all(2, ft.Colors.BLUE_GREY_700),
         bgcolor=ft.Colors.BLUE_GREY_900,
         alignment=ft.alignment.top_left,
-        width=360 
+        # Usar el ancho de la ventana para que se vea bien en el móvil
+        width=page.window_width - 20 
     )
 
     # --- Funciones de UI ---
@@ -410,7 +411,6 @@ def main(page: ft.Page):
         update_ui(result)
         
     def reset_app(e):
-        """Maneja la acción del botón de RESET."""
         engine.reset_all()
         update_ui({"status": "RESET", "message": "Reinicio manual completado."}) 
 
@@ -435,10 +435,6 @@ def main(page: ft.Page):
             ),
             width=width,
             height=height,
-            # Reducir el tamaño de la fuente del botón para que quepa bien
-            # Nota: Flet maneja la fuente automáticamente en el ElevatedButton,
-            # pero podemos forzar un tamaño si lo envolvemos en un Container con Text.
-            # Aquí lo mantendremos simple, asumiendo que el tamaño por defecto es aceptable.
         )
         return ft.Container(btn, padding=ft.padding.all(1))
     
@@ -472,7 +468,7 @@ def main(page: ft.Page):
             create_number_chip(n, size=CHIP_SIZE) for n in display_history 
         )
         
-        # 2. ACTUALIZACIÓN DE "ÚLTIMOS 2" 
+        # 2. ACTUALIZACIÓN DE "ÚLTIMOS 2"
         ultimos_dos_view.controls.clear()
         ultimos_dos_nums = full_history[-2:]
         ultimos_dos_nums.reverse()
@@ -480,7 +476,7 @@ def main(page: ft.Page):
         if ultimos_dos_nums: 
             ultimos_dos_view.controls.append(ft.Text("Últimos 2:", color=ft.Colors.WHITE70, size=FONT_SIZE_SMALL, weight=ft.FontWeight.BOLD)) 
             ultimos_dos_view.controls.extend(
-                create_number_chip(n, size=CHIP_SIZE - 4) for n in ultimos_dos_nums # Chips más pequeños aquí
+                create_number_chip(n, size=CHIP_SIZE - 4) for n in ultimos_dos_nums 
             )
         
         # 3. Lógica de Actualización de Status
@@ -542,16 +538,6 @@ def main(page: ft.Page):
         page.update()
 
     # --- Creación de UI (Parrilla de la Ruleta) ---
-    btn_reset = ft.ElevatedButton(
-        text="🔴 RESET", 
-        on_click=reset_app,
-        icon=ft.Icons.RESTART_ALT, 
-        style=ft.ButtonStyle(
-            bgcolor=ft.Colors.RED_900,
-            color=ft.Colors.WHITE,
-            padding=ft.padding.symmetric(horizontal=10, vertical=5) 
-        )
-    )
 
     cero_col = ft.Column([create_roulette_button(0)], spacing=0, horizontal_alignment=ft.CrossAxisAlignment.START, alignment=ft.MainAxisAlignment.CENTER)
     
@@ -569,20 +555,24 @@ def main(page: ft.Page):
 
     roulette_grid_of_rows = ft.Column([row_3, row_2, row_1], spacing=0, horizontal_alignment=ft.CrossAxisAlignment.START)
 
-    # Componente principal de la parrilla (se alineó a START)
+    # Componente principal de la parrilla (alineado a START)
     full_board_row = ft.Row(
         controls=[cero_col, roulette_grid_of_rows],
-        spacing=2, 
+        spacing=0, 
         alignment=ft.MainAxisAlignment.START, # Crucial para forzar el desborde
         vertical_alignment=ft.CrossAxisAlignment.START 
     )
     
-    # CORRECCIÓN: Usar ft.ListView para scroll horizontal
-    scrollable_board = ft.ListView(
+    # CORRECCIÓN FINAL: Usamos un Row con el scroll habilitado, confiando en 
+    # que versiones antiguas de Flet lo interpreten para scroll horizontal.
+    # También fijamos la altura del Row para que se comporte como una "fila" deslizable.
+    scrollable_board = ft.Row(
         controls=[full_board_row],
-        # Altura fija, igual a la altura del 0 (3 filas de botones)
-        height=ZERO_HEIGHT + 10, 
-        scroll_direction=ft.ScrollDirection.HORIZONTAL # Habilitar el scroll horizontal
+        height=ZERO_HEIGHT + 10,  # Fija la altura total de la parrilla (0 y 3 filas)
+        # En versiones antiguas, solo se necesita el scroll=True/ft.ScrollMode.ADAPTIVE
+        # y que el contenido desborde en el eje que no es por defecto (vertical).
+        # Aunque es un Row, forzamos el scroll para que lo interprete como horizontal.
+        scroll=ft.ScrollMode.ADAPTIVE 
     )
     
     status_container = ft.Container(
@@ -590,13 +580,14 @@ def main(page: ft.Page):
         padding=10,
         border_radius=10,
         bgcolor=ft.Colors.BLUE_GREY_800,
-        width=360 
+        # Ajustar ancho al de la ventana
+        width=page.window_width - 20 
     )
 
     # Agrega todos los componentes a la página
     page.add(
         ft.Container(height=5), 
-        ft.Row([btn_reset], alignment=ft.MainAxisAlignment.START),
+        ft.Row([ft.Container(width=page.window_width - 20, content=btn_reset)], alignment=ft.MainAxisAlignment.START), # Asegurar que el botón se ajuste al ancho
         ft.Container(height=5), 
         # Usamos el componente scrollable_board corregido
         scrollable_board,
