@@ -318,7 +318,7 @@ class RuletaEngine:
         self.prediccion_ab = "N/A"
 
 # =======================================================================
-# INTERFAZ FLET (AJUSTES DE TAMAÑO Y SCROLL HORIZONTAL CORREGIDO)
+# INTERFAZ FLET (CORRECCIÓN DE ERRORES DE DEFINICIÓN Y SCROLL)
 # =======================================================================
 
 def main(page: ft.Page):
@@ -332,17 +332,18 @@ def main(page: ft.Page):
 
     engine = RuletaEngine(long_bloque=LONGITUD_BLOQUE)
 
-    # AJUSTES DE TAMAÑO DE FUENTE
+    # --- CONSTANTES DE TAMAÑO ---
     FONT_SIZE_SMALL = 12
     FONT_SIZE_MEDIUM = 14
     CHIP_SIZE = 28
     BUTTON_SIZE = 38 
     ZERO_HEIGHT = BUTTON_SIZE * 3 + 2 
+    CONTROLS_WIDTH = page.window_width - 20 # Ancho usado para contenedores principales y botón de reset
 
-    # Componentes de la Interfaz
+    # --- Componentes de la Interfaz (Definidos primero para evitar "not defined" errors) ---
+    
     txt_status = ft.Text("Listo para empezar. Ingresa 7 números.", color=ft.Colors.YELLOW_ACCENT_100, size=FONT_SIZE_MEDIUM)
     
-    # Vista del Bloque Actual
     block_view = ft.Row(
         controls=[],
         wrap=True,
@@ -351,7 +352,6 @@ def main(page: ft.Page):
     )
     txt_block_label = ft.Text(f"Bloque Actual ({engine.N} giros):", color=ft.Colors.WHITE70, size=FONT_SIZE_SMALL) 
 
-    # Vista de los últimos 2 números con color
     ultimos_dos_view = ft.Row(
         controls=[],
         spacing=3, 
@@ -359,7 +359,6 @@ def main(page: ft.Page):
         vertical_alignment=ft.CrossAxisAlignment.CENTER
     )
     
-    # Predicción Altos/Bajos
     txt_altos_bajos = ft.Text(
         "Análisis Altos/Bajos: N/A",
         color=ft.Colors.PURPLE_ACCENT_100,
@@ -367,13 +366,25 @@ def main(page: ft.Page):
         size=FONT_SIZE_MEDIUM
     )
     
-    # Vista de chips de la Jugada Final (Horizontal)
     numbers_view = ft.Row(
         controls=[],
         wrap=True, 
         spacing=4, 
         alignment=ft.MainAxisAlignment.START, 
         vertical_alignment=ft.CrossAxisAlignment.START,
+    )
+    
+    # Botón de Reset (Definición subida para corregir el error)
+    btn_reset = ft.ElevatedButton(
+        text="🔴 RESET", 
+        on_click=lambda e: reset_app(e), # Aseguramos que la llamada a reset_app sea correcta
+        icon=ft.Icons.RESTART_ALT, 
+        style=ft.ButtonStyle(
+            bgcolor=ft.Colors.RED_900,
+            color=ft.Colors.WHITE,
+            padding=ft.padding.symmetric(horizontal=15, vertical=5) 
+        ),
+        width=CONTROLS_WIDTH # Usar el ancho definido para el control
     )
     
     jugada_container = ft.Container(
@@ -383,11 +394,10 @@ def main(page: ft.Page):
         border=ft.border.all(2, ft.Colors.BLUE_GREY_700),
         bgcolor=ft.Colors.BLUE_GREY_900,
         alignment=ft.alignment.top_left,
-        # Usar el ancho de la ventana para que se vea bien en el móvil
-        width=page.window_width - 20 
+        width=CONTROLS_WIDTH 
     )
 
-    # --- Funciones de UI ---
+    # --- Funciones de UI (Dependen de las constantes y componentes definidos arriba) ---
     
     def get_number_color(number: int) -> str:
         token = engine.MAPA_COLORES.get(number, 'G')
@@ -411,6 +421,7 @@ def main(page: ft.Page):
         update_ui(result)
         
     def reset_app(e):
+        """Maneja la acción del botón de RESET."""
         engine.reset_all()
         update_ui({"status": "RESET", "message": "Reinicio manual completado."}) 
 
@@ -559,20 +570,15 @@ def main(page: ft.Page):
     full_board_row = ft.Row(
         controls=[cero_col, roulette_grid_of_rows],
         spacing=0, 
-        alignment=ft.MainAxisAlignment.START, # Crucial para forzar el desborde
+        alignment=ft.MainAxisAlignment.START, 
         vertical_alignment=ft.CrossAxisAlignment.START 
     )
     
-    # CORRECCIÓN FINAL: Usamos un Row con el scroll habilitado, confiando en 
-    # que versiones antiguas de Flet lo interpreten para scroll horizontal.
-    # También fijamos la altura del Row para que se comporte como una "fila" deslizable.
+    # CORRECCIÓN DE SCROLL: Usamos un Row con el scroll habilitado y altura fija.
     scrollable_board = ft.Row(
         controls=[full_board_row],
         height=ZERO_HEIGHT + 10,  # Fija la altura total de la parrilla (0 y 3 filas)
-        # En versiones antiguas, solo se necesita el scroll=True/ft.ScrollMode.ADAPTIVE
-        # y que el contenido desborde en el eje que no es por defecto (vertical).
-        # Aunque es un Row, forzamos el scroll para que lo interprete como horizontal.
-        scroll=ft.ScrollMode.ADAPTIVE 
+        scroll=ft.ScrollMode.ADAPTIVE # Habilita el scroll horizontal
     )
     
     status_container = ft.Container(
@@ -580,14 +586,14 @@ def main(page: ft.Page):
         padding=10,
         border_radius=10,
         bgcolor=ft.Colors.BLUE_GREY_800,
-        # Ajustar ancho al de la ventana
-        width=page.window_width - 20 
+        width=CONTROLS_WIDTH 
     )
 
     # Agrega todos los componentes a la página
     page.add(
         ft.Container(height=5), 
-        ft.Row([ft.Container(width=page.window_width - 20, content=btn_reset)], alignment=ft.MainAxisAlignment.START), # Asegurar que el botón se ajuste al ancho
+        # El botón de reset ya está definido
+        ft.Row([btn_reset], alignment=ft.MainAxisAlignment.START), 
         ft.Container(height=5), 
         # Usamos el componente scrollable_board corregido
         scrollable_board,
