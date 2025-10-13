@@ -318,31 +318,38 @@ class RuletaEngine:
         self.prediccion_ab = "N/A"
 
 # =======================================================================
-# INTERFAZ FLET (AJUSTES DE TAMAÑO Y SCROLL HORIZONTAL)
+# INTERFAZ FLET (AJUSTES DE TAMAÑO Y SCROLL HORIZONTAL CORREGIDO)
 # =======================================================================
 
 def main(page: ft.Page):
     page.title = "Bot de Ruleta - Flet Expert Mode 🚀"
     page.vertical_alignment = ft.MainAxisAlignment.START
-    # AJUSTE 1: Reducir el tamaño de la ventana para forzar el scroll horizontal
+    
+    # AJUSTE: Reducir el tamaño de la ventana para un móvil típico
     page.window_width = 380 
     page.window_height = 650 
     page.bgcolor = ft.Colors.BLUE_GREY_900
 
     engine = RuletaEngine(long_bloque=LONGITUD_BLOQUE)
 
+    # AJUSTES DE TAMAÑO DE FUENTE
+    FONT_SIZE_SMALL = 12
+    FONT_SIZE_MEDIUM = 14
+    CHIP_SIZE = 28
+    BUTTON_SIZE = 38 
+    ZERO_HEIGHT = BUTTON_SIZE * 3 + 2 
+
     # Componentes de la Interfaz
-    txt_status = ft.Text("Listo para empezar. Ingresa 7 números.", color=ft.Colors.YELLOW_ACCENT_100)
+    txt_status = ft.Text("Listo para empezar. Ingresa 7 números.", color=ft.Colors.YELLOW_ACCENT_100, size=FONT_SIZE_MEDIUM)
     
     # Vista del Bloque Actual
     block_view = ft.Row(
         controls=[],
         wrap=True,
-        # AJUSTE: Reducir espaciado
         spacing=3, 
         alignment=ft.MainAxisAlignment.START,
     )
-    txt_block_label = ft.Text(f"Bloque Actual ({engine.N} giros):", color=ft.Colors.WHITE70, size=12) 
+    txt_block_label = ft.Text(f"Bloque Actual ({engine.N} giros):", color=ft.Colors.WHITE70, size=FONT_SIZE_SMALL) 
 
     # Vista de los últimos 2 números con color
     ultimos_dos_view = ft.Row(
@@ -356,7 +363,8 @@ def main(page: ft.Page):
     txt_altos_bajos = ft.Text(
         "Análisis Altos/Bajos: N/A",
         color=ft.Colors.PURPLE_ACCENT_100,
-        weight=ft.FontWeight.BOLD
+        weight=ft.FontWeight.BOLD,
+        size=FONT_SIZE_MEDIUM
     )
     
     # Vista de chips de la Jugada Final (Horizontal)
@@ -386,15 +394,15 @@ def main(page: ft.Page):
         if token == 'N': return ft.Colors.BLACK87
         return ft.Colors.GREEN_700
         
-    def create_number_chip(number: int, size: int = 28) -> ft.Container: 
+    def create_number_chip(number: int, size: int = CHIP_SIZE) -> ft.Container: 
         color = get_number_color(number)
         return ft.Container(
-            content=ft.Text(str(number), weight=ft.FontWeight.BOLD, color=ft.Colors.WHITE, size=12), 
+            content=ft.Text(str(number), weight=ft.FontWeight.BOLD, color=ft.Colors.WHITE, size=FONT_SIZE_SMALL),
             width=size,
             height=size,
             alignment=ft.alignment.center,
             bgcolor=color,
-            border_radius=ft.border_radius.all(14), 
+            border_radius=ft.border_radius.all(CHIP_SIZE / 2),
         )
 
     def submit_spin(num: int):
@@ -402,12 +410,9 @@ def main(page: ft.Page):
         update_ui(result)
         
     def reset_app(e):
+        """Maneja la acción del botón de RESET."""
         engine.reset_all()
         update_ui({"status": "RESET", "message": "Reinicio manual completado."}) 
-
-    # AJUSTE: Reducir el tamaño de los botones de la ruleta
-    BUTTON_SIZE = 38 
-    ZERO_HEIGHT = BUTTON_SIZE * 3 + 2 
 
     def create_roulette_button(number: int) -> ft.Container:
         color = get_number_color(number)
@@ -430,12 +435,16 @@ def main(page: ft.Page):
             ),
             width=width,
             height=height,
+            # Reducir el tamaño de la fuente del botón para que quepa bien
+            # Nota: Flet maneja la fuente automáticamente en el ElevatedButton,
+            # pero podemos forzar un tamaño si lo envolvemos en un Container con Text.
+            # Aquí lo mantendremos simple, asumiendo que el tamaño por defecto es aceptable.
         )
         return ft.Container(btn, padding=ft.padding.all(1))
     
     # REFERENCIA GLOBAL AL CONTENIDO DEL ft.Container DE ESTADO
     status_content = ft.Column([
-        ft.Text("ESTADO:", weight=ft.FontWeight.BOLD, color=ft.Colors.WHITE, size=14), 
+        ft.Text("ESTADO:", weight=ft.FontWeight.BOLD, color=ft.Colors.WHITE, size=FONT_SIZE_MEDIUM), 
         ft.Column([txt_status]), 
         ft.Divider(height=5, color=ft.Colors.WHITE10), 
         
@@ -460,18 +469,18 @@ def main(page: ft.Page):
         display_history = list(full_history)
         display_history.reverse() 
         block_view.controls.extend(
-            create_number_chip(n, size=28) for n in display_history 
+            create_number_chip(n, size=CHIP_SIZE) for n in display_history 
         )
         
-        # 2. ACTUALIZACIÓN DE "ÚLTIMOS 2"
+        # 2. ACTUALIZACIÓN DE "ÚLTIMOS 2" 
         ultimos_dos_view.controls.clear()
         ultimos_dos_nums = full_history[-2:]
         ultimos_dos_nums.reverse()
         
         if ultimos_dos_nums: 
-            ultimos_dos_view.controls.append(ft.Text("Últimos 2:", color=ft.Colors.WHITE70, size=12, weight=ft.FontWeight.BOLD)) 
+            ultimos_dos_view.controls.append(ft.Text("Últimos 2:", color=ft.Colors.WHITE70, size=FONT_SIZE_SMALL, weight=ft.FontWeight.BOLD)) 
             ultimos_dos_view.controls.extend(
-                create_number_chip(n, size=24) for n in ultimos_dos_nums 
+                create_number_chip(n, size=CHIP_SIZE - 4) for n in ultimos_dos_nums # Chips más pequeños aquí
             )
         
         # 3. Lógica de Actualización de Status
@@ -514,11 +523,11 @@ def main(page: ft.Page):
         numbers_view.controls.clear()
         jugada_display = list(engine.jugada_set) if status in ["JUGADA_ACTIVA", "WAITING"] else []
         numbers_view.controls.extend(
-            create_number_chip(n, size=28) for n in sorted(jugada_display) 
+            create_number_chip(n, size=CHIP_SIZE) for n in sorted(jugada_display) 
         )
         
         if not jugada_display and status in ["JUGADA_ACTIVA", "WAITING"]:
-            numbers_view.controls.append(ft.Text("Jugada vacía o no activa.", color=ft.Colors.RED_500, size=14)) 
+            numbers_view.controls.append(ft.Text("Jugada vacía o no activa.", color=ft.Colors.RED_500, size=FONT_SIZE_MEDIUM)) 
 
         # 5. Actualización del análisis de Altos/Bajos
         txt_altos_bajos.value = f"Análisis Altos/Bajos: {engine.prediccion_ab}"
@@ -532,7 +541,7 @@ def main(page: ft.Page):
 
         page.update()
 
-    # --- Creación de UI (Ajustes de Diseño) ---
+    # --- Creación de UI (Parrilla de la Ruleta) ---
     btn_reset = ft.ElevatedButton(
         text="🔴 RESET", 
         on_click=reset_app,
@@ -546,7 +555,6 @@ def main(page: ft.Page):
 
     cero_col = ft.Column([create_roulette_button(0)], spacing=0, horizontal_alignment=ft.CrossAxisAlignment.START, alignment=ft.MainAxisAlignment.CENTER)
     
-    # Se usan las mismas filas de números, pero con botones más pequeños (BUTTON_SIZE = 38)
     row_3_nums = [n for n in range(1, 37) if n % 3 == 0]
     row_3_btns = [create_roulette_button(n) for n in row_3_nums]
     row_3 = ft.Row(row_3_btns, spacing=0, alignment=ft.MainAxisAlignment.START)
@@ -561,19 +569,20 @@ def main(page: ft.Page):
 
     roulette_grid_of_rows = ft.Column([row_3, row_2, row_1], spacing=0, horizontal_alignment=ft.CrossAxisAlignment.START)
 
+    # Componente principal de la parrilla (se alineó a START)
     full_board_row = ft.Row(
         controls=[cero_col, roulette_grid_of_rows],
         spacing=2, 
-        # AJUSTE: Alinear a la izquierda para el scroll
-        alignment=ft.MainAxisAlignment.START, 
+        alignment=ft.MainAxisAlignment.START, # Crucial para forzar el desborde
         vertical_alignment=ft.CrossAxisAlignment.START 
     )
     
-    # AJUSTE 2: Envolver la parrilla de la ruleta en un SingleChildScrollView
-    scrollable_board = ft.SingleChildScrollView(
-        content=full_board_row,
-        scroll=ft.ScrollMode.ADAPTIVE,
-        axis=ft.ScrollMode.HORIZONTAL # Esto habilita el scroll de izquierda a derecha
+    # CORRECCIÓN: Usar ft.ListView para scroll horizontal
+    scrollable_board = ft.ListView(
+        controls=[full_board_row],
+        # Altura fija, igual a la altura del 0 (3 filas de botones)
+        height=ZERO_HEIGHT + 10, 
+        scroll_direction=ft.ScrollDirection.HORIZONTAL # Habilitar el scroll horizontal
     )
     
     status_container = ft.Container(
@@ -589,12 +598,12 @@ def main(page: ft.Page):
         ft.Container(height=5), 
         ft.Row([btn_reset], alignment=ft.MainAxisAlignment.START),
         ft.Container(height=5), 
-        # Usamos el componente scrollable_board aquí
+        # Usamos el componente scrollable_board corregido
         scrollable_board,
         ft.Divider(height=10, color=ft.Colors.WHITE38), 
         status_container,
         ft.Divider(height=10, color=ft.Colors.WHITE38), 
-        ft.Text("🎯 JUGADA FINAL (Cruce Algoritmo/Color):", size=14, weight=ft.FontWeight.BOLD, color=ft.Colors.WHITE, text_align=ft.TextAlign.LEFT), 
+        ft.Text("🎯 JUGADA FINAL (Cruce Algoritmo/Color):", size=FONT_SIZE_MEDIUM, weight=ft.FontWeight.BOLD, color=ft.Colors.WHITE, text_align=ft.TextAlign.LEFT), 
         jugada_container
     )
     
