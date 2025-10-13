@@ -318,7 +318,7 @@ class RuletaEngine:
         self.prediccion_ab = "N/A"
 
 # =======================================================================
-# INTERFAZ FLET (CORRECCIÓN DE ERRORES DE DEFINICIÓN Y SCROLL)
+# INTERFAZ FLET (AJUSTES DE SCROLL Y COMPACTACIÓN DE BLOQUE DE ESTADO)
 # =======================================================================
 
 def main(page: ft.Page):
@@ -333,32 +333,35 @@ def main(page: ft.Page):
     engine = RuletaEngine(long_bloque=LONGITUD_BLOQUE)
 
     # --- CONSTANTES DE TAMAÑO ---
-    FONT_SIZE_SMALL = 12
-    FONT_SIZE_MEDIUM = 14
-    CHIP_SIZE = 28
+    FONT_SIZE_SMALL = 11 # Reducción de fuente
+    FONT_SIZE_MEDIUM = 13 # Reducción de fuente
+    CHIP_SIZE = 26 # Chips un poco más pequeños
     BUTTON_SIZE = 38 
     ZERO_HEIGHT = BUTTON_SIZE * 3 + 2 
-    CONTROLS_WIDTH = page.window_width - 20 # Ancho usado para contenedores principales y botón de reset
+    CONTROLS_WIDTH = page.window_width - 20 
 
-    # --- Componentes de la Interfaz (Definidos primero para evitar "not defined" errors) ---
+    # --- Componentes de la Interfaz ---
     
     txt_status = ft.Text("Listo para empezar. Ingresa 7 números.", color=ft.Colors.YELLOW_ACCENT_100, size=FONT_SIZE_MEDIUM)
     
+    # Vista del Bloque Actual
     block_view = ft.Row(
         controls=[],
         wrap=True,
-        spacing=3, 
+        spacing=2, # Reducción de espaciado
         alignment=ft.MainAxisAlignment.START,
     )
     txt_block_label = ft.Text(f"Bloque Actual ({engine.N} giros):", color=ft.Colors.WHITE70, size=FONT_SIZE_SMALL) 
 
+    # Vista de los últimos 2 números con color
     ultimos_dos_view = ft.Row(
         controls=[],
-        spacing=3, 
+        spacing=2, # Reducción de espaciado
         alignment=ft.MainAxisAlignment.START,
         vertical_alignment=ft.CrossAxisAlignment.CENTER
     )
     
+    # Predicción Altos/Bajos
     txt_altos_bajos = ft.Text(
         "Análisis Altos/Bajos: N/A",
         color=ft.Colors.PURPLE_ACCENT_100,
@@ -366,38 +369,39 @@ def main(page: ft.Page):
         size=FONT_SIZE_MEDIUM
     )
     
+    # Vista de chips de la Jugada Final
     numbers_view = ft.Row(
         controls=[],
         wrap=True, 
-        spacing=4, 
+        spacing=3, # Reducción de espaciado
         alignment=ft.MainAxisAlignment.START, 
         vertical_alignment=ft.CrossAxisAlignment.START,
     )
     
-    # Botón de Reset (Definición subida para corregir el error)
+    # Botón de Reset
     btn_reset = ft.ElevatedButton(
         text="🔴 RESET", 
-        on_click=lambda e: reset_app(e), # Aseguramos que la llamada a reset_app sea correcta
+        on_click=lambda e: reset_app(e), 
         icon=ft.Icons.RESTART_ALT, 
         style=ft.ButtonStyle(
             bgcolor=ft.Colors.RED_900,
             color=ft.Colors.WHITE,
             padding=ft.padding.symmetric(horizontal=15, vertical=5) 
         ),
-        width=CONTROLS_WIDTH # Usar el ancho definido para el control
+        width=CONTROLS_WIDTH 
     )
     
     jugada_container = ft.Container(
         content=numbers_view,
         padding=5, 
-        border_radius=10,
+        border_radius=8, # Bordes un poco más pequeños
         border=ft.border.all(2, ft.Colors.BLUE_GREY_700),
         bgcolor=ft.Colors.BLUE_GREY_900,
         alignment=ft.alignment.top_left,
         width=CONTROLS_WIDTH 
     )
 
-    # --- Funciones de UI (Dependen de las constantes y componentes definidos arriba) ---
+    # --- Funciones de UI ---
     
     def get_number_color(number: int) -> str:
         token = engine.MAPA_COLORES.get(number, 'G')
@@ -408,7 +412,7 @@ def main(page: ft.Page):
     def create_number_chip(number: int, size: int = CHIP_SIZE) -> ft.Container: 
         color = get_number_color(number)
         return ft.Container(
-            content=ft.Text(str(number), weight=ft.FontWeight.BOLD, color=ft.Colors.WHITE, size=FONT_SIZE_SMALL),
+            content=ft.Text(str(number), weight=ft.FontWeight.BOLD, color=ft.Colors.WHITE, size=FONT_SIZE_SMALL - 1), # Fuente extra pequeña para chips
             width=size,
             height=size,
             alignment=ft.alignment.center,
@@ -421,7 +425,6 @@ def main(page: ft.Page):
         update_ui(result)
         
     def reset_app(e):
-        """Maneja la acción del botón de RESET."""
         engine.reset_all()
         update_ui({"status": "RESET", "message": "Reinicio manual completado."}) 
 
@@ -450,10 +453,11 @@ def main(page: ft.Page):
         return ft.Container(btn, padding=ft.padding.all(1))
     
     # REFERENCIA GLOBAL AL CONTENIDO DEL ft.Container DE ESTADO
+    # Este es el contenedor interno que ahora será más compacto
     status_content = ft.Column([
         ft.Text("ESTADO:", weight=ft.FontWeight.BOLD, color=ft.Colors.WHITE, size=FONT_SIZE_MEDIUM), 
         ft.Column([txt_status]), 
-        ft.Divider(height=5, color=ft.Colors.WHITE10), 
+        ft.Divider(height=2, color=ft.Colors.WHITE10), # Divisor más delgado
         
         # Bloque Actual con chips de color (Index 3)
         ft.Column([
@@ -461,7 +465,7 @@ def main(page: ft.Page):
             block_view
         ]),
         
-        ft.Divider(height=5, color=ft.Colors.WHITE10), 
+        ft.Divider(height=2, color=ft.Colors.WHITE10), # Divisor más delgado
         txt_altos_bajos, 
     ])
     
@@ -501,27 +505,25 @@ def main(page: ft.Page):
             
         elif status in ["COLLECTING", "NO_JUGADA", "JUGADA_ACTIVA", "WAITING"]:
             
+            # Reducir el texto de estado para que quepa mejor en el móvil
             if status == "COLLECTING":
                 txt_status.value = f"🟡 RECOLECTANDO: {message}"
-                txt_status.color = ft.Colors.YELLOW_ACCENT_100
             elif status == "NO_JUGADA":
                 txt_status.value = f"🔴 Sin jugada detectada. Bloque avanzado."
-                txt_status.color = ft.Colors.RED_ACCENT_700
             elif status == "JUGADA_ACTIVA":
                 jugada = result['result']
+                # Compactar la línea de jugada
                 txt_status.value = (
-                    f"✅ JUGADA DETECTADA: Apostar a {jugada['jugada_detectada']}! "
-                    f"Algoritmo(s): {jugada['algoritmos_activos']} | "
+                    f"✅ JUGADA: Apostar {jugada['jugada_detectada']}! Algoritmo(s): {jugada['algoritmos_activos']}"
                 )
                 txt_status.color = ft.Colors.BLUE_ACCENT_100
             elif status == "WAITING":
-                txt_status.value = f"⏳ ESPERANDO ACIERTO (Giro post-apuesta {engine.post_count})"
-                txt_status.color = ft.Colors.ORANGE_500
+                txt_status.value = f"⏳ ESPERANDO ACIERTO (Giro post {engine.post_count})"
 
             status_row_controls = ft.Row([
                 txt_status, 
                 ultimos_dos_view
-            ], spacing=5, vertical_alignment=ft.CrossAxisAlignment.CENTER) 
+            ], spacing=2, vertical_alignment=ft.CrossAxisAlignment.CENTER) 
             
             status_row_container.controls.clear()
             status_row_container.controls.append(status_row_controls)
@@ -566,7 +568,7 @@ def main(page: ft.Page):
 
     roulette_grid_of_rows = ft.Column([row_3, row_2, row_1], spacing=0, horizontal_alignment=ft.CrossAxisAlignment.START)
 
-    # Componente principal de la parrilla (alineado a START)
+    # Contenedor de la parrilla (con scroll horizontal - solución compatible)
     full_board_row = ft.Row(
         controls=[cero_col, roulette_grid_of_rows],
         spacing=0, 
@@ -574,32 +576,32 @@ def main(page: ft.Page):
         vertical_alignment=ft.CrossAxisAlignment.START 
     )
     
-    # CORRECCIÓN DE SCROLL: Usamos un Row con el scroll habilitado y altura fija.
     scrollable_board = ft.Row(
         controls=[full_board_row],
-        height=ZERO_HEIGHT + 10,  # Fija la altura total de la parrilla (0 y 3 filas)
-        scroll=ft.ScrollMode.ADAPTIVE # Habilita el scroll horizontal
+        height=ZERO_HEIGHT + 10,  
+        scroll=ft.ScrollMode.ADAPTIVE 
     )
     
+    # NUEVA APLICACIÓN DE SCROLL AL CONTENEDOR DE ESTADO
     status_container = ft.Container(
         content=status_content,
-        padding=10,
-        border_radius=10,
+        padding=5, # Reducción de padding
+        border_radius=8,
         bgcolor=ft.Colors.BLUE_GREY_800,
-        width=CONTROLS_WIDTH 
+        width=CONTROLS_WIDTH, 
+        height=180, # Altura fija para forzar el scroll vertical si el contenido crece
+        scroll=ft.ScrollMode.ADAPTIVE # Habilitar scroll (principalmente vertical)
     )
 
     # Agrega todos los componentes a la página
     page.add(
         ft.Container(height=5), 
-        # El botón de reset ya está definido
         ft.Row([btn_reset], alignment=ft.MainAxisAlignment.START), 
         ft.Container(height=5), 
-        # Usamos el componente scrollable_board corregido
         scrollable_board,
-        ft.Divider(height=10, color=ft.Colors.WHITE38), 
+        ft.Divider(height=5, color=ft.Colors.WHITE38), # Divisor más pequeño
         status_container,
-        ft.Divider(height=10, color=ft.Colors.WHITE38), 
+        ft.Divider(height=5, color=ft.Colors.WHITE38), # Divisor más pequeño
         ft.Text("🎯 JUGADA FINAL (Cruce Algoritmo/Color):", size=FONT_SIZE_MEDIUM, weight=ft.FontWeight.BOLD, color=ft.Colors.WHITE, text_align=ft.TextAlign.LEFT), 
         jugada_container
     )
