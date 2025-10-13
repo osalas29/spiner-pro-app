@@ -132,7 +132,6 @@ def patron_altos_bajos(bloque: List[int]) -> Tuple[Optional[str], Optional[str],
             
     return None, None, (bajos_final, altos_final)
 
-
 def detectar_algoritmos(bloque: List[int]) -> List[int]:
     ULTIMOS_RELEVANTES = 3
     RANGO_VECINOS = 1
@@ -297,19 +296,16 @@ class RuletaEngine:
         self.post_tail.clear()
         self.prediccion_ab = "N/A"
 # =======================================================================
-# INTERFAZ FLET
+# INTERFAZ FLET Y ESTRUCTURA PRINCIPAL
 # =======================================================================
 
 def main(page: ft.Page):
-    page.title = "Bot de Ruleta - Flet Expert Mode 🚀"
+    # --- LA LÍNEA page.title SE HA ELIMINADO COMPLETAMENTE. ---
+    
     page.vertical_alignment = ft.MainAxisAlignment.START
-    # DIMENSIONES FIJAS ELIMINADAS PARA ADAPTACIÓN MÓVIL
-    # page.window_width = 550 
-    # page.window_height = 750 
     page.bgcolor = ft.Colors.BLUE_GREY_900
 
-    # engine debe ser definido o importado si ejecutas esta parte sola.
-    # Asumiendo que el código anterior ya lo definió.
+    # Inicialización del Engine (Asume que la Parte 1 está en el mismo archivo o importada)
     engine = RuletaEngine(long_bloque=LONGITUD_BLOQUE)
 
     # Componentes de la Interfaz
@@ -339,7 +335,7 @@ def main(page: ft.Page):
         weight=ft.FontWeight.BOLD
     )
     
-    # Vista de chips de la Jugada Final (Horizontal)
+    # Vista de chips de la Jugada Final
     numbers_view = ft.Row(
         controls=[],
         wrap=True, 
@@ -348,7 +344,7 @@ def main(page: ft.Page):
         vertical_alignment=ft.CrossAxisAlignment.START,
     )
     
-    # Contenedor de Jugada (Ancho=None para responsividad)
+    # Contenedor de Jugada
     jugada_container = ft.Container(
         content=numbers_view,
         padding=10,
@@ -416,7 +412,7 @@ def main(page: ft.Page):
         ft.Column([txt_status]), 
         ft.Divider(height=10, color=ft.Colors.WHITE10),
         
-        # Bloque Actual con chips de color (Index 3)
+        # Bloque Actual con chips de color 
         ft.Column([
             txt_block_label,
             block_view
@@ -527,12 +523,12 @@ def main(page: ft.Page):
         )
     )
     
-    # 1. Lista de números por columna (verticalmente)
+    # Lista de números por columna (verticalmente)
     row_3_nums = [n for n in range(3, 37, 3)] 
     row_2_nums = [n for n in range(2, 37, 3)] 
     row_1_nums = [n for n in range(1, 37, 3)] 
 
-    # 2. Contenedor de la cuadrícula de números 1-36 (12 filas de 3 botones)
+    # Contenedor de la cuadrícula de números 1-36 (12 filas de 3 botones)
     numbers_grid = ft.Column(
         controls=[
             ft.Row(
@@ -549,14 +545,14 @@ def main(page: ft.Page):
         horizontal_alignment=ft.CrossAxisAlignment.START
     )
 
-    # 3. Contenedor del CERO (Ocupa el espacio de 3 filas de la columna de 1-36)
+    # Contenedor del CERO 
     cero_col = ft.Column([create_roulette_button(0)], spacing=0, alignment=ft.MainAxisAlignment.START)
 
 
-    # 4. Uso de ft.ResponsiveRow para el tablero completo (CERO + NUMEROS)
+    # Uso de ft.ResponsiveRow para el tablero completo (CERO + NUMEROS)
     full_board_container = ft.ResponsiveRow(
         controls=[
-            # Columna del Cero: Toma 2/12 (1/6) del espacio en móvil/desktop
+            # Columna del Cero: Toma 2/12 (1/6) del espacio
             ft.Container(
                 content=cero_col,
                 col={"xs": 2}, 
@@ -615,5 +611,4 @@ if __name__ == "__main__":
         port=port, 
         host="0.0.0.0"
     )
-
 
