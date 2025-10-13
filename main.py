@@ -318,29 +318,29 @@ class RuletaEngine:
         self.prediccion_ab = "N/A"
 
 # =======================================================================
-# INTERFAZ FLET (AJUSTES DE SCROLL Y COMPACTACIÓN DE BLOQUE DE ESTADO)
+# INTERFAZ FLET (CORRECCIÓN DE ERRORES DE DEFINICIÓN, SCROLL Y COMPACTACIÓN)
 # =======================================================================
 
 def main(page: ft.Page):
     page.title = "Bot de Ruleta - Flet Expert Mode 🚀"
     page.vertical_alignment = ft.MainAxisAlignment.START
     
-    # Ajustar el ancho de la ventana a un valor que funcione para la mayoría de los móviles.
+    # --- CONSTANTES DE PÁGINA ---
     page.window_width = 380 
     page.window_height = 650 
     page.bgcolor = ft.Colors.BLUE_GREY_900
 
     engine = RuletaEngine(long_bloque=LONGITUD_BLOQUE)
 
-    # --- CONSTANTES DE TAMAÑO ---
-    FONT_SIZE_SMALL = 11 # Reducción de fuente
-    FONT_SIZE_MEDIUM = 13 # Reducción de fuente
-    CHIP_SIZE = 26 # Chips un poco más pequeños
+    # --- CONSTANTES DE TAMAÑO (COMPACTADAS) ---
+    FONT_SIZE_SMALL = 11 
+    FONT_SIZE_MEDIUM = 13
+    CHIP_SIZE = 26 
     BUTTON_SIZE = 38 
     ZERO_HEIGHT = BUTTON_SIZE * 3 + 2 
     CONTROLS_WIDTH = page.window_width - 20 
 
-    # --- Componentes de la Interfaz ---
+    # --- Componentes de la Interfaz (Definidos antes de su uso) ---
     
     txt_status = ft.Text("Listo para empezar. Ingresa 7 números.", color=ft.Colors.YELLOW_ACCENT_100, size=FONT_SIZE_MEDIUM)
     
@@ -348,7 +348,7 @@ def main(page: ft.Page):
     block_view = ft.Row(
         controls=[],
         wrap=True,
-        spacing=2, # Reducción de espaciado
+        spacing=2, 
         alignment=ft.MainAxisAlignment.START,
     )
     txt_block_label = ft.Text(f"Bloque Actual ({engine.N} giros):", color=ft.Colors.WHITE70, size=FONT_SIZE_SMALL) 
@@ -356,7 +356,7 @@ def main(page: ft.Page):
     # Vista de los últimos 2 números con color
     ultimos_dos_view = ft.Row(
         controls=[],
-        spacing=2, # Reducción de espaciado
+        spacing=2, 
         alignment=ft.MainAxisAlignment.START,
         vertical_alignment=ft.CrossAxisAlignment.CENTER
     )
@@ -373,12 +373,12 @@ def main(page: ft.Page):
     numbers_view = ft.Row(
         controls=[],
         wrap=True, 
-        spacing=3, # Reducción de espaciado
+        spacing=3, 
         alignment=ft.MainAxisAlignment.START, 
         vertical_alignment=ft.CrossAxisAlignment.START,
     )
     
-    # Botón de Reset
+    # Botón de Reset (DEFINICIÓN DE VARIABLE CORREGIDA)
     btn_reset = ft.ElevatedButton(
         text="🔴 RESET", 
         on_click=lambda e: reset_app(e), 
@@ -394,7 +394,7 @@ def main(page: ft.Page):
     jugada_container = ft.Container(
         content=numbers_view,
         padding=5, 
-        border_radius=8, # Bordes un poco más pequeños
+        border_radius=8, 
         border=ft.border.all(2, ft.Colors.BLUE_GREY_700),
         bgcolor=ft.Colors.BLUE_GREY_900,
         alignment=ft.alignment.top_left,
@@ -412,7 +412,7 @@ def main(page: ft.Page):
     def create_number_chip(number: int, size: int = CHIP_SIZE) -> ft.Container: 
         color = get_number_color(number)
         return ft.Container(
-            content=ft.Text(str(number), weight=ft.FontWeight.BOLD, color=ft.Colors.WHITE, size=FONT_SIZE_SMALL - 1), # Fuente extra pequeña para chips
+            content=ft.Text(str(number), weight=ft.FontWeight.BOLD, color=ft.Colors.WHITE, size=FONT_SIZE_SMALL - 1), 
             width=size,
             height=size,
             alignment=ft.alignment.center,
@@ -453,11 +453,10 @@ def main(page: ft.Page):
         return ft.Container(btn, padding=ft.padding.all(1))
     
     # REFERENCIA GLOBAL AL CONTENIDO DEL ft.Container DE ESTADO
-    # Este es el contenedor interno que ahora será más compacto
-    status_content = ft.Column([
+    status_content_column = ft.Column([ # Renombrado para evitar confusión con el contenedor externo
         ft.Text("ESTADO:", weight=ft.FontWeight.BOLD, color=ft.Colors.WHITE, size=FONT_SIZE_MEDIUM), 
         ft.Column([txt_status]), 
-        ft.Divider(height=2, color=ft.Colors.WHITE10), # Divisor más delgado
+        ft.Divider(height=2, color=ft.Colors.WHITE10), 
         
         # Bloque Actual con chips de color (Index 3)
         ft.Column([
@@ -465,7 +464,7 @@ def main(page: ft.Page):
             block_view
         ]),
         
-        ft.Divider(height=2, color=ft.Colors.WHITE10), # Divisor más delgado
+        ft.Divider(height=2, color=ft.Colors.WHITE10), 
         txt_altos_bajos, 
     ])
     
@@ -495,7 +494,7 @@ def main(page: ft.Page):
             )
         
         # 3. Lógica de Actualización de Status
-        status_row_container = status_content.controls[1]
+        status_row_container = status_content_column.controls[1]
         
         if status == "RESET" or status == "ACIERTO":
             txt_status.value = f"🎉 {message}" if status == "ACIERTO" else f"🟢 {message}"
@@ -505,11 +504,12 @@ def main(page: ft.Page):
             
         elif status in ["COLLECTING", "NO_JUGADA", "JUGADA_ACTIVA", "WAITING"]:
             
-            # Reducir el texto de estado para que quepa mejor en el móvil
             if status == "COLLECTING":
                 txt_status.value = f"🟡 RECOLECTANDO: {message}"
+                txt_status.color = ft.Colors.YELLOW_ACCENT_100
             elif status == "NO_JUGADA":
                 txt_status.value = f"🔴 Sin jugada detectada. Bloque avanzado."
+                txt_status.color = ft.Colors.RED_ACCENT_700
             elif status == "JUGADA_ACTIVA":
                 jugada = result['result']
                 # Compactar la línea de jugada
@@ -519,6 +519,7 @@ def main(page: ft.Page):
                 txt_status.color = ft.Colors.BLUE_ACCENT_100
             elif status == "WAITING":
                 txt_status.value = f"⏳ ESPERANDO ACIERTO (Giro post {engine.post_count})"
+                txt_status.color = ft.Colors.ORANGE_500
 
             status_row_controls = ft.Row([
                 txt_status, 
@@ -568,7 +569,7 @@ def main(page: ft.Page):
 
     roulette_grid_of_rows = ft.Column([row_3, row_2, row_1], spacing=0, horizontal_alignment=ft.CrossAxisAlignment.START)
 
-    # Contenedor de la parrilla (con scroll horizontal - solución compatible)
+    # Componente principal de la parrilla (alineado a START)
     full_board_row = ft.Row(
         controls=[cero_col, roulette_grid_of_rows],
         spacing=0, 
@@ -576,21 +577,28 @@ def main(page: ft.Page):
         vertical_alignment=ft.CrossAxisAlignment.START 
     )
     
-    scrollable_board = ft.Row(
+    # CORRECCIÓN DE SCROLL DEL TABLERO: Usamos ft.ListView (Compatible y soporta scroll)
+    scrollable_board = ft.ListView(
         controls=[full_board_row],
-        height=ZERO_HEIGHT + 10,  
-        scroll=ft.ScrollMode.ADAPTIVE 
+        # Scroll horizontal es el comportamiento predeterminado si hay desborde y un único elemento ancho
+        # En versiones antiguas, el scroll vertical se activa si el height no se especifica.
+        # Aquí especificamos un height fijo y sabemos que el contenido interno (full_board_row) es ancho.
+        height=ZERO_HEIGHT + 10, # Altura fija para la parrilla (3 filas de botones + cero)
+        # La propiedad horizontal=True (o scroll_direction) no existe o da error,
+        # pero ListView maneja el scroll horizontal si el contenido es ancho.
     )
     
-    # NUEVA APLICACIÓN DE SCROLL AL CONTENEDOR DE ESTADO
-    status_container = ft.Container(
-        content=status_content,
-        padding=5, # Reducción de padding
+    # CORRECCIÓN DE SCROLL DEL BLOQUE DE ESTADO: Usamos ft.ListView (Compatible y soporta scroll vertical)
+    status_content_container = ft.Container(
+        content=ft.ListView(
+            controls=[status_content_column],
+            # Scroll vertical es el comportamiento por defecto y se activa con height fijo
+            height=180, # Altura fija para el contenedor de estado
+        ),
+        padding=5, 
         border_radius=8,
         bgcolor=ft.Colors.BLUE_GREY_800,
         width=CONTROLS_WIDTH, 
-        height=180, # Altura fija para forzar el scroll vertical si el contenido crece
-        scroll=ft.ScrollMode.ADAPTIVE # Habilitar scroll (principalmente vertical)
     )
 
     # Agrega todos los componentes a la página
@@ -598,10 +606,10 @@ def main(page: ft.Page):
         ft.Container(height=5), 
         ft.Row([btn_reset], alignment=ft.MainAxisAlignment.START), 
         ft.Container(height=5), 
-        scrollable_board,
-        ft.Divider(height=5, color=ft.Colors.WHITE38), # Divisor más pequeño
-        status_container,
-        ft.Divider(height=5, color=ft.Colors.WHITE38), # Divisor más pequeño
+        scrollable_board, # ListView para el scroll horizontal del tablero
+        ft.Divider(height=5, color=ft.Colors.WHITE38), 
+        status_content_container, # Container con ListView interno para el scroll vertical del estado
+        ft.Divider(height=5, color=ft.Colors.WHITE38), 
         ft.Text("🎯 JUGADA FINAL (Cruce Algoritmo/Color):", size=FONT_SIZE_MEDIUM, weight=ft.FontWeight.BOLD, color=ft.Colors.WHITE, text_align=ft.TextAlign.LEFT), 
         jugada_container
     )
