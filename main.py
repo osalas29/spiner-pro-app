@@ -1,4 +1,4 @@
-import flet as ft
+﻿import flet as ft
 from collections import deque
 from typing import List, Set, Tuple, Optional, Dict
 import os
@@ -6,6 +6,7 @@ import itertools
 
 # =======================================================================
 # LÓGICA DEL MOTOR DE RULETA
+# (SIN CAMBIOS)
 # =======================================================================
 
 # --- MAPAS Y DICCIONARIOS GLOBALES (SIN CAMBIOS) ---
@@ -114,16 +115,15 @@ def patron_inicial_12(tokens_bloque: List[str]) -> Tuple[Optional[str], Optional
 def patron_altos_bajos(bloque: List[int]) -> Tuple[Optional[str], Optional[str], Tuple[int, int]]:
     N = LONGITUD_BLOQUE
     
-    # Usamos solo los últimos N números para el análisis de patrón, incluso si el bloque es más largo (historial)
+    # Usamos solo los últimos N números para el análisis de patrón (historial)
     analisis_bloque = bloque[-N:]
     
     if len(analisis_bloque) < N:
-        # Lógica para mostrar el conteo parcial (si no está completo)
+        # Lógica para mostrar el conteo parcial 
         bajos_parcial = sum(1 for n in analisis_bloque if 1 <= n <= 18 or n == 0)
         altos_parcial = sum(1 for n in analisis_bloque if 19 <= n <= 36)
         return None, None, (bajos_parcial, altos_parcial) 
     
-    # Crear la cadena de patrón (ej: "AABBBBB")
     tokens_ab = [alto_bajo_token(n) for n in analisis_bloque]
     patron_string = "".join(tokens_ab)
     
@@ -132,10 +132,8 @@ def patron_altos_bajos(bloque: List[int]) -> Tuple[Optional[str], Optional[str],
 
     for entry in COMBINACIONES_AB_PREDICCION:
         if patron_string in entry["patrones"]:
-            # El resultado es "ALTOS" o "BAJOS"
             return entry["resultado_ab"], patron_string, (bajos_final, altos_final)
             
-    # Si el bloque está completo pero el patrón no está en el diccionario
     return None, None, (bajos_final, altos_final)
 
 
@@ -175,11 +173,8 @@ def detectar_algoritmos(bloque: List[int]) -> List[int]:
     return sorted(activos)[:1] 
 
 def calcular_jugada(bloque: List[int]) -> dict:
-    # Solo usamos el bloque más reciente (últimos N giros) para la predicción de color/algoritmo
     bloque_relevante = bloque[-LONGITUD_BLOQUE:]
-    
     colores = [color_token(n) for n in bloque_relevante]
-    
     pred_color, _ = patron_inicial_12(colores) 
 
     if pred_color == 'R':
@@ -226,7 +221,6 @@ class RuletaEngine:
         self.block: List[int] = [] 
         self.jugada_set: Set[int] = set()
         self.post_count = 0
-        # post_tail tiene una longitud máxima de N para asegurar que se mantiene el historial 
         self.post_tail = deque(maxlen=long_bloque) 
         self.MAPA_COLORES = MAPA_COLORES
         self.prediccion_ab = "N/A" 
@@ -247,14 +241,11 @@ class RuletaEngine:
             return {"status": "RESET", "message": "CERO detectado. Reinicio completo."}
 
         if self.state == "COLLECT_BLOCK":
-            # El bloque crece hasta N, luego desliza
             if len(self.block) == self.N:
-                self.block.pop(0) # Elimina el más antiguo
+                self.block.pop(0) 
             self.block.append(numero)
             
-            current_history = self.get_full_history() # Simplemente self.block aquí, pero mantiene la consistencia
-            
-            # --- ANÁLISIS INDEPENDIENTE DE ALTOS/BAJOS USANDO PATRONES ---
+            current_history = self.get_full_history() 
             prediccion_ab, _, (bajos, altos) = patron_altos_bajos(current_history)
             
             if prediccion_ab:
@@ -265,7 +256,6 @@ class RuletaEngine:
             if len(self.block) < self.N:
                 return {"status": "COLLECTING", "message": f"Faltan {self.N - len(self.block)} para el bloque."}
             
-            # Si el bloque está completo, calculamos jugada y decidimos el siguiente estado
             res = calcular_jugada(self.block)
             
             if res["algoritmos_activos"] and res["jugada_final"]:
@@ -275,25 +265,22 @@ class RuletaEngine:
                 self.post_tail.clear()
                 return {"status": "JUGADA_ACTIVA", "result": res}
             else:
-                # Si no hay jugada, mantenemos el estado COLLECT_BLOCK y el bloque ya deslizó
                 return {"status": "NO_JUGADA", "result": res}
 
         elif self.state == "WAIT_ACIERTO":
             self.post_count += 1
-            self.post_tail.append(numero) # Agrega el número a la cola post-apuesta
+            self.post_tail.append(numero) 
             
             if numero in self.jugada_set:
-                # ACIERTO: Recortamos el block base y reiniciamos
-                keep = min(max(self.post_count, 1), self.N) # Mantener hasta N elementos, pero mínimo 1
+                keep = min(max(self.post_count, 1), self.N) 
                 self.block = list(self.post_tail)[-keep:] 
                 self.jugada_set = set() 
                 self.state = "COLLECT_BLOCK"
-                self.post_count = 0 # Reiniciar la cola post-apuesta para que esté vacía en el siguiente giro COLLECT
+                self.post_count = 0 
                 self.post_tail.clear()
-                self.prediccion_ab = "N/A" # Se actualizará en el siguiente giro (COLLECTING)
+                self.prediccion_ab = "N/A" 
                 return {"status": "ACIERTO", "message": f"¡ACIERTO! Número {numero} Ganador. Nuevo Bloque base.", "acierto_num": numero}
             
-            # WAITING: Actualizamos Altos/Bajos para el estado WAITING (usa los últimos N del historial completo)
             current_history = self.get_full_history()
             prediccion_ab, _, (bajos, altos) = patron_altos_bajos(current_history)
 
@@ -307,7 +294,6 @@ class RuletaEngine:
         return {"status": "INTERNAL_ERROR", "message": "Estado desconocido."}
 
     def reset_all(self):
-        """Función para limpiar todo el estado del motor."""
         self.state = "COLLECT_BLOCK"
         self.block = []
         self.jugada_set = set()
@@ -322,7 +308,7 @@ class RuletaEngine:
 def main(page: ft.Page):
     page.title = "Bot de Ruleta - Flet Expert Mode 🚀"
     page.vertical_alignment = ft.MainAxisAlignment.START
-    # DIMENSIONES FIJAS ELIMINADAS O COMENTADAS PARA ADAPTACIÓN MÓVIL
+    # DIMENSIONES FIJAS ELIMINADAS PARA ADAPTACIÓN MÓVIL
     # page.window_width = 550 
     # page.window_height = 750 
     page.bgcolor = ft.Colors.BLUE_GREY_900
@@ -372,7 +358,7 @@ def main(page: ft.Page):
         border=ft.border.all(2, ft.Colors.BLUE_GREY_700),
         bgcolor=ft.Colors.BLUE_GREY_900,
         alignment=ft.alignment.top_left,
-        width=565 # Se mantiene un ancho máximo para escritorio/tableta, pero se adapta a móvil
+        width=None # Ajuste para que tome el 100% en móvil
     )
 
     # --- Funciones de UI ---
@@ -399,7 +385,6 @@ def main(page: ft.Page):
         update_ui(result)
         
     def reset_app(e):
-        """Maneja la acción del botón de RESET."""
         engine.reset_all()
         update_ui({"status": "RESET", "message": "Reinicio manual completado."}) 
 
@@ -410,6 +395,8 @@ def main(page: ft.Page):
         height = 40
         
         if number == 0:
+             # El 0 ahora se ajustará mejor al tamaño de la fila de 12 botones que está al lado
+             # Le damos un tamaño que cubra 3 filas.
              height = 130 
              width = 50 
         
@@ -447,13 +434,10 @@ def main(page: ft.Page):
         status = result.get("status", "...")
         message = result.get("message", "")
         
-        # OBTENEMOS EL HISTORIAL COMPLETO Y RECIENTE DEL MOTOR
         full_history = engine.get_full_history()
         
         # 1. ACTUALIZACIÓN DEL BLOQUE (CHIPS DE COLORES)
         block_view.controls.clear()
-        
-        # Invertir el historial completo para visualización: [Reciente, ..., Antiguo]
         display_history = list(full_history)
         display_history.reverse() 
         
@@ -461,10 +445,8 @@ def main(page: ft.Page):
             create_number_chip(n) for n in display_history
         )
         
-        # 2. ACTUALIZACIÓN DE "ÚLTIMOS 2" (Calculado desde el historial completo)
+        # 2. ACTUALIZACIÓN DE "ÚLTIMOS 2" 
         ultimos_dos_view.controls.clear()
-        
-        # Tomamos los últimos dos números del historial completo (si existen)
         ultimos_dos_nums = full_history[-2:]
         ultimos_dos_nums.reverse()
         
@@ -478,11 +460,9 @@ def main(page: ft.Page):
         status_row_container = status_content.controls[1]
         
         if status == "RESET" or status == "ACIERTO":
-            # Si hay reinicio o acierto, el bloque base ya está acortado/vaciado.
             txt_status.value = f"🎉 {message}" if status == "ACIERTO" else f"🟢 {message}"
             txt_status.color = ft.Colors.GREEN_ACCENT_700
             
-            # Mostramos el estado principal
             status_row_container.controls.clear()
             status_row_container.controls.append(txt_status)
             
@@ -505,114 +485,9 @@ def main(page: ft.Page):
                 txt_status.value = f"⏳ ESPERANDO ACIERTO (Giro post-apuesta {engine.post_count})"
                 txt_status.color = ft.Colors.ORANGE_500
 
-            # Muestra el estado y los últimos 2 si hay números
             status_row_controls = ft.Row([
                 txt_status, 
                 ultimos_dos_view
             ], spacing=10, vertical_alignment=ft.CrossAxisAlignment.CENTER)
             
-            status_row_container.controls.clear()
-            status_row_container.controls.append(status_row_controls)
-            
-        # 4. Lógica para mostrar la Jugada Final (Sin Cambios)
-        numbers_view.controls.clear()
-        
-        jugada_display = []
-        if status == "JUGADA_ACTIVA" or status == "WAITING":
-            jugada_display = list(engine.jugada_set)
-        
-        numbers_view.controls.extend(
-            create_number_chip(n) for n in sorted(jugada_display)
-        )
-        
-        if not jugada_display and status in ["JUGADA_ACTIVA", "WAITING"]:
-            numbers_view.controls.append(ft.Text("Jugada vacía o no activa.", color=ft.Colors.RED_500))
-
-        # 5. Actualización del análisis de Altos/Bajos (Sin Cambios)
-        txt_altos_bajos.value = f"Análisis Altos/Bajos: {engine.prediccion_ab}"
-        
-        if "ALTOS" in engine.prediccion_ab:
-            txt_altos_bajos.color = ft.Colors.RED_ACCENT_100
-        elif "BAJOS" in engine.prediccion_ab:
-            txt_altos_bajos.color = ft.Colors.WHITE
-        elif "N/A" in engine.prediccion_ab:
-            txt_altos_bajos.color = ft.Colors.PURPLE_ACCENT_100
-
-        page.update()
-
-    # --- Creación de UI (Sin Cambios) ---
-    btn_reset = ft.ElevatedButton(
-        text="🔴 RESET", 
-        on_click=reset_app,
-        icon=ft.Icons.RESTART_ALT, 
-        style=ft.ButtonStyle(
-            bgcolor=ft.Colors.RED_900,
-            color=ft.Colors.WHITE,
-            padding=ft.padding.symmetric(horizontal=15, vertical=10)
-        )
-    )
-
-    cero_col = ft.Column([create_roulette_button(0)], spacing=0, horizontal_alignment=ft.CrossAxisAlignment.START, alignment=ft.MainAxisAlignment.CENTER)
-    
-    row_3_nums = [n for n in range(1, 37) if n % 3 == 0]
-    row_3_btns = [create_roulette_button(n) for n in row_3_nums]
-    row_3 = ft.Row(row_3_btns, spacing=0, alignment=ft.MainAxisAlignment.START)
-
-    row_2_nums = [n for n in range(1, 37) if n % 3 == 2]
-    row_2_btns = [create_roulette_button(n) for n in row_2_nums]
-    row_2 = ft.Row(row_2_btns, spacing=0, alignment=ft.MainAxisAlignment.START)
-    
-    row_1_nums = [n for n in range(1, 37) if n % 3 == 1]
-    row_1_btns = [create_roulette_button(n) for n in row_1_nums]
-    row_1 = ft.Row(row_1_btns, spacing=0, alignment=ft.MainAxisAlignment.START)
-
-    roulette_grid_of_rows = ft.Column([row_3, row_2, row_1], spacing=0, horizontal_alignment=ft.CrossAxisAlignment.START)
-
-    full_board_row = ft.Row(
-        controls=[cero_col, roulette_grid_of_rows],
-        spacing=0, 
-        alignment=ft.MainAxisAlignment.START, 
-        vertical_alignment=ft.CrossAxisAlignment.START 
-    )
-    
-    status_container = ft.Container(
-        content=status_content,
-        padding=10,
-        border_radius=10,
-        bgcolor=ft.Colors.BLUE_GREY_800,
-        width=565 # Se mantiene el ancho máximo para la apariencia en escritorio/tablet, pero será 100% en móvil.
-    )
-
-    # Agrega todos los componentes a la página
-    page.add(
-        ft.Container(height=10),
-        ft.Row([btn_reset], alignment=ft.MainAxisAlignment.START),
-        ft.Container(height=10),
-        ft.Text("🔢 TABLERO DE RULETA (EUROPEA):", size=18, weight=ft.FontWeight.BOLD, color=ft.Colors.WHITE),
-        ft.Container(height=5),
-        full_board_row,
-        ft.Divider(height=20, color=ft.Colors.WHITE38),
-        status_container,
-        ft.Divider(height=20, color=ft.Colors.WHITE38),
-        ft.Text("🎯 JUGADA FINAL (Cruce Algoritmo/Color):", size=16, weight=ft.FontWeight.BOLD, color=ft.Colors.WHITE, text_align=ft.TextAlign.LEFT),
-        jugada_container
-    )
-    
-    # Inicializamos la UI
-    update_ui({"status": "COLLECTING", "message": f"Listo para empezar. Ingresa {engine.N} números."})
-    
-
-# =======================================================================
-# INICIO DE LA APLICACIÓN (CORREGIDO PARA DESPLIEGUE EN RENDER)
-# =======================================================================
-if __name__ == "__main__":
-    # 1. Obtener el puerto de la variable de entorno (Render lo proporciona)
-    port = int(os.environ.get("PORT", 8080))
-    
-    # 2. Iniciar la aplicación en modo WEB, escuchando en 0.0.0.0 (todos los hosts)
-    ft.app(
-        target=main, 
-        view=ft.AppView.WEB_BROWSER, 
-        port=port, 
-        host="0.0.0.0"
-    )
+            statu
