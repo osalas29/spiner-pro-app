@@ -3,6 +3,7 @@ from collections import deque
 from typing import List, Set, Tuple, Optional, Dict
 from datetime import datetime
 import itertools
+import os
 
 # =======================================================================
 # LÓGICA DEL MOTOR DE RULETA
