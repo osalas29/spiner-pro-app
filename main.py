@@ -1,7 +1,7 @@
 import flet as ft
 from collections import deque
 from typing import List, Set, Tuple, Optional, Dict
-from datetime import datetime
+import os
 import itertools
 
 # =======================================================================
@@ -371,7 +371,7 @@ def main(page: ft.Page):
         border=ft.border.all(2, ft.Colors.BLUE_GREY_700),
         bgcolor=ft.Colors.BLUE_GREY_900,
         alignment=ft.alignment.top_left,
-        width=530 
+        width=565 # Ajustado para coincidir con status_container
     )
 
     # --- Funciones de UI ---
@@ -481,8 +481,6 @@ def main(page: ft.Page):
             txt_status.value = f"🎉 {message}" if status == "ACIERTO" else f"🟢 {message}"
             txt_status.color = ft.Colors.GREEN_ACCENT_700
             
-            # Limpiamos los últimos 2 si el historial es muy corto (ya lo hicimos arriba)
-            
             # Mostramos el estado principal
             status_row_container.controls.clear()
             status_row_container.controls.append(txt_status)
@@ -581,7 +579,7 @@ def main(page: ft.Page):
         padding=10,
         border_radius=10,
         bgcolor=ft.Colors.BLUE_GREY_800,
-        width=565
+        width=565 # Se mantiene el valor de 565 que tenías
     )
 
     # Agrega todos los componentes a la página
@@ -601,12 +599,10 @@ def main(page: ft.Page):
     # Inicializamos la UI
     update_ui({"status": "COLLECTING", "message": f"Listo para empezar. Ingresa {engine.N} números."})
     
-import os
-# ... (todo tu código de lógica y UI)
 
-def main(page: ft.Page):
-    # ... (el contenido de tu función main)
-
+# =======================================================================
+# INICIO DE LA APLICACIÓN (CORREGIDO PARA DESPLIEGUE EN RENDER)
+# =======================================================================
 if __name__ == "__main__":
     # 1. Obtener el puerto de la variable de entorno (Render lo proporciona)
     port = int(os.environ.get("PORT", 8080))
