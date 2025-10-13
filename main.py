@@ -485,13 +485,13 @@ def main(page: ft.Page):
             create_number_chip(n, size=CHIP_SIZE) for n in display_history 
         )
         
-        # 2. ACTUALIZACIÓN DE "ÚLTIMOS 2"
+        # 2. ACTUALIZACIÓN DE "ÚLTIMOS 4"
         ultimos_dos_view.controls.clear()
-        ultimos_dos_nums = full_history[-2:]
+        ultimos_dos_nums = full_history[-4:]
         ultimos_dos_nums.reverse()
         
         if ultimos_dos_nums: 
-            ultimos_dos_view.controls.append(ft.Text("Últimos 2:", color=ft.Colors.WHITE70, size=FONT_SIZE_SMALL, weight=ft.FontWeight.BOLD)) 
+            ultimos_dos_view.controls.append(ft.Text("Últimos 4:", color=ft.Colors.WHITE70, size=FONT_SIZE_SMALL, weight=ft.FontWeight.BOLD)) 
             ultimos_dos_view.controls.extend(
                 create_number_chip(n, size=CHIP_SIZE - 4) for n in ultimos_dos_nums 
             )
@@ -637,4 +637,5 @@ if __name__ == "__main__":
         port=port, 
         host="0.0.0.0"
     )
+
 
