@@ -322,8 +322,9 @@ class RuletaEngine:
 def main(page: ft.Page):
     page.title = "Bot de Ruleta - Flet Expert Mode 🚀"
     page.vertical_alignment = ft.MainAxisAlignment.START
-    page.window_width = 550 
-    page.window_height = 750 
+    # DIMENSIONES FIJAS ELIMINADAS O COMENTADAS PARA ADAPTACIÓN MÓVIL
+    # page.window_width = 550 
+    # page.window_height = 750 
     page.bgcolor = ft.Colors.BLUE_GREY_900
 
     engine = RuletaEngine(long_bloque=LONGITUD_BLOQUE)
@@ -371,7 +372,7 @@ def main(page: ft.Page):
         border=ft.border.all(2, ft.Colors.BLUE_GREY_700),
         bgcolor=ft.Colors.BLUE_GREY_900,
         alignment=ft.alignment.top_left,
-        width=565 # Ajustado para coincidir con status_container
+        width=565 # Se mantiene un ancho máximo para escritorio/tableta, pero se adapta a móvil
     )
 
     # --- Funciones de UI ---
@@ -579,7 +580,7 @@ def main(page: ft.Page):
         padding=10,
         border_radius=10,
         bgcolor=ft.Colors.BLUE_GREY_800,
-        width=565 # Se mantiene el valor de 565 que tenías
+        width=565 # Se mantiene el ancho máximo para la apariencia en escritorio/tablet, pero será 100% en móvil.
     )
 
     # Agrega todos los componentes a la página
@@ -587,6 +588,7 @@ def main(page: ft.Page):
         ft.Container(height=10),
         ft.Row([btn_reset], alignment=ft.MainAxisAlignment.START),
         ft.Container(height=10),
+        ft.Text("🔢 TABLERO DE RULETA (EUROPEA):", size=18, weight=ft.FontWeight.BOLD, color=ft.Colors.WHITE),
         ft.Container(height=5),
         full_board_row,
         ft.Divider(height=20, color=ft.Colors.WHITE38),
@@ -608,7 +610,6 @@ if __name__ == "__main__":
     port = int(os.environ.get("PORT", 8080))
     
     # 2. Iniciar la aplicación en modo WEB, escuchando en 0.0.0.0 (todos los hosts)
-    # y usando el puerto que Render asignó.
     ft.app(
         target=main, 
         view=ft.AppView.WEB_BROWSER, 
