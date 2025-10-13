@@ -1,4 +1,1 @@
-flet== 0.28.3
-numpy==1.26.4
-pandas
-requests
+flet
