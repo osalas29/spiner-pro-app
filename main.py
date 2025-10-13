@@ -326,8 +326,8 @@ def main(page: ft.Page):
     page.vertical_alignment = ft.MainAxisAlignment.START
     
     # --- CONSTANTES DE PÁGINA ---
-    page.window_width = 380 
-    page.window_height = 650 
+    page.window.width = 380 
+    page.window.height = 650 
     page.bgcolor = ft.Colors.BLUE_GREY_900
 
     engine = RuletaEngine(long_bloque=LONGITUD_BLOQUE)
@@ -637,6 +637,7 @@ if __name__ == "__main__":
         port=port, 
         host="0.0.0.0"
     )
+
 
 
 
