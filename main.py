@@ -323,8 +323,8 @@ class RuletaEngine:
 def main(page: ft.Page):
     page.title = "Bot de Ruleta - Flet Expert Mode 🚀"
     page.vertical_alignment = ft.MainAxisAlignment.START
-    page.window_width = 350 
-    page.window_height = 550 
+    page.window_width = 150 
+    page.window_height = 350 
     page.bgcolor = ft.Colors.BLUE_GREY_900
 
     engine = RuletaEngine(long_bloque=LONGITUD_BLOQUE)
@@ -383,7 +383,7 @@ def main(page: ft.Page):
         if token == 'N': return ft.Colors.BLACK87
         return ft.Colors.GREEN_700
         
-    def create_number_chip(number: int, size: int = 25) -> ft.Container:
+    def create_number_chip(number: int, size: int = 35) -> ft.Container:
         color = get_number_color(number)
         return ft.Container(
             content=ft.Text(str(number), weight=ft.FontWeight.BOLD, color=ft.Colors.WHITE),
@@ -471,7 +471,7 @@ def main(page: ft.Page):
         if ultimos_dos_nums: 
             ultimos_dos_view.controls.append(ft.Text("Últimos 2:", color=ft.Colors.WHITE70, size=14, weight=ft.FontWeight.BOLD))
             ultimos_dos_view.controls.extend(
-                create_number_chip(n, size=24) for n in ultimos_dos_nums
+                create_number_chip(n, size=34) for n in ultimos_dos_nums
             )
         
         # 3. Lógica de Actualización de Status
@@ -582,7 +582,7 @@ def main(page: ft.Page):
         padding=10,
         border_radius=10,
         bgcolor=ft.Colors.BLUE_GREY_800,
-        width=565
+        width=365
     )
 
     # Agrega todos los componentes a la página
