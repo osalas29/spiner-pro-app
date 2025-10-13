@@ -338,7 +338,7 @@ def main(page: ft.Page):
     CHIP_SIZE = 26 
     BUTTON_SIZE = 38 
     ZERO_HEIGHT = BUTTON_SIZE * 3 + 2 
-    CONTROLS_WIDTH = page.window_width - 20 
+    CONTROLS_WIDTH = page.window_width - 5 
 
     # --- Componentes de la Interfaz (Definidos antes de su uso) ---
     
@@ -637,5 +637,6 @@ if __name__ == "__main__":
         port=port, 
         host="0.0.0.0"
     )
+
 
 
